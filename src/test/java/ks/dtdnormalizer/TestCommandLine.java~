@@ -1,0 +1,24 @@
+package ks.dtdnormalizer;
+
+import org.junit.Assert;
+import org.junit.Test;
+
+public class TestCommandLine {
+
+    private static final String RESOURCE_DIR = System.getProperty("test.resource.dir");
+
+    private static final String OUTPUT_DIR = System.getProperty("test.output.dir");
+
+    @Test
+    public void producesAHelpMessage() {
+        try {
+            System.err.println("test.resource.dir=" + RESOURCE_DIR);
+            CommandLine cl = new CommandLine(new String[] {
+              OUTPUT_DIR,
+            });
+            cl.go();
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+}

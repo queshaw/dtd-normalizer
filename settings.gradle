@@ -1,0 +1,4 @@
+// -*-mode: Groovy -*-
+
+rootProject.name = 'dtd-normalizer'
+
