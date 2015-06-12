@@ -41,7 +41,6 @@ public final class CommandLine {
 
         final Serialization out =
             new XmlSerialization(new File(new URI(outputPaths.get(0))));
-        System.err.println("outputPaths=" + outputPaths.get(0));
         final XniConfiguration configuration = new XniConfiguration();
         final DtdHandler tracer = new DtdHandler(out, configuration);
         final DocumentHandler dh = new DocumentHandler(out, configuration);
