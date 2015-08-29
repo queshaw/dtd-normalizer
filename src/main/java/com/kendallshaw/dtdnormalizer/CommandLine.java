@@ -12,6 +12,10 @@ import org.apache.xerces.xni.parser.XMLInputSource;
 
 public final class CommandLine {
 
+    public static final String COMMENTS = "dtd-normalizer.comments";
+
+    public static final String SERIALIZATION = "dtd-normalizer.serialization";
+
     private String catalogPath;
 
     private String pathSpec;
@@ -24,6 +28,9 @@ public final class CommandLine {
         if (args.length < 3) {
             final String name = getClass().getName();
             System.err.printf("Usage: %s ( output-directory | output-file ) catalog-path ( xml-path | @file-list-file )\n", name);
+            System.err.println("\nSystem properties:\n");
+            System.err.println("dtd-normalizer.comments=(true|false) (default: false)   Adds entity location comments.");
+            System.err.println("dtd-normalizer.serialization=(xml|dtd) (default: xml)   Selects XML or DTD text output.");
             System.exit(1);
         }
         outputPaths.add(args[0]);
@@ -39,8 +46,17 @@ public final class CommandLine {
     public void go() throws Exception {
         parsePaths(pathSpec);
 
-        final Serialization out =
-            new XmlSerialization(new File(new URI(outputPaths.get(0))));
+        File f = new File(new URI(outputPaths.get(0)));
+        Serialization out = null;
+        if ("xml".equals(System.getProperty(SERIALIZATION, "xml"))) {
+            XmlSerialization s = new XmlSerialization(f);
+            out = s;
+        } else {
+            DtdSerialization s =
+                new DtdSerialization(new File(new URI(outputPaths.get(0))));
+            s.setWithComments(Boolean.parseBoolean(System.getProperty(COMMENTS, "false")));
+            out = s;
+        }
         final XniConfiguration configuration = new XniConfiguration();
         final DtdHandler tracer = new DtdHandler(out, configuration);
         final DocumentHandler dh = new DocumentHandler(out, configuration);
