@@ -4,6 +4,8 @@ apply plugin: 'java'
 
 version = 0.1
 
+defaultTasks 'jar'
+
 jar {
   from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
   manifest {
@@ -11,7 +13,8 @@ jar {
                'Implementation-Version': version,
                'Built-By': 'Kendall Shaw',
                'Built-Date': new Date(), 
-               'Built-JDK': System.getProperty("java.version")
+               'Built-JDK': System.getProperty("java.version"),
+               'Main-class': 'com.kendallshaw.dtdnormalizer.CommandLine'
   }
 }
 
