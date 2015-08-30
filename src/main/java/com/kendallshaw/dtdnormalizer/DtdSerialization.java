@@ -120,7 +120,7 @@ public class DtdSerialization extends SerializationMixin
         throws XNIException
     {
         if (isWithComments()) {
-			out("<?xml");
+			out("\n<?xml");
 			if (version != null && !version.trim().isEmpty())
 				out(" version=\"%s\"", version);
 			if (encoding != null && !encoding.trim().isEmpty())
@@ -161,7 +161,7 @@ public class DtdSerialization extends SerializationMixin
     {
         if (isWithComments())
             locationComment();
-        out("<![%s[\n", condition);
+        out("\n<![%s[\n", condition);
 	}
 
 	@Override
@@ -231,7 +231,7 @@ public class DtdSerialization extends SerializationMixin
 	public void endEntity() throws XNIException {
         if (isWithComments()) {
             locationComment();
-            out("<!-- end of entity %s -->\n", entityStack.pop());
+            out("<!-- end of entity %s -->\n\n", entityStack.pop());
         }
 	}
 
@@ -391,6 +391,7 @@ public class DtdSerialization extends SerializationMixin
     {
         XMLLocator loc = getLocator();
         if (loc != null) {
+            out("\n");
             String baseId = loc.getBaseSystemId();
             int lineNumber = loc.getLineNumber();
             if (systemId != null)
