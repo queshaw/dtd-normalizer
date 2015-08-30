@@ -392,24 +392,23 @@ public class DtdSerialization extends SerializationMixin
         XMLLocator loc = getLocator();
         if (loc != null) {
             String baseId = loc.getBaseSystemId();
-            if (baseId != null) 
-                out("<!-- %s -->\n", baseId);
-            StringBuilder sb = new StringBuilder("[");
             int lineNumber = loc.getLineNumber();
-            if (systemId != null) {
+            if (systemId != null)
                 externalIdentifier(publicId, systemId);
-                if (lineNumber > -1)
-                    sb.append("<!-- line: " + lineNumber + "-->\n");
+            if (baseId != null)  {
+                out("<!-- %s", baseId);
+                if(lineNumber < 0)
+                    out(" -->\n");
+                else
+                    out(" [" + lineNumber + "] -->\n");
             }
         }
     }
 
-    protected String externalIdentifier(final String p, final String s) {
-        StringBuilder sb = new StringBuilder();
+    protected void externalIdentifier(final String p, final String s) {
         if (p != null && !"".equals(p))
-            sb.append("<!-- public-id: " + p + " -->\n");
-        sb.append("<!-- system-id: " + s + " -->\n");
-        return sb.toString();
+        	out("<!-- public-id: " + p + " -->\n");
+        out("<!-- system-id: " + s + " -->\n");
     }
 
     protected void out(final String fmt, final Object... args)
