@@ -14,11 +14,20 @@ dtd-normalizer.serialization=(xml|dtd) (default: xml)   Selects XML or DTD text 
 
 ## Building
 
-The **get-dependencies.*** scripts use maven to retreive
-dependencies. The result should be that jars are put in a lib
-directory. The m2 and target directories that should also be
-created may be discarded after the lib directory is populated by
-the script.
+To build from source, you need java, then:
 
-After supplying the dependencies, you can use Gradle to build a jar file.
+Unix:
 
+./gradlew
+
+Windows:
+
+gradlew
+
+The **get-dependencies.*** scripts can be used to retrieve newer
+versions of the dependencies, than those in the lib directory.
+
+The scripts use maven to retreive dependencies The result should be
+that jars are put in a lib directory. The m2 and target directories
+that should also be created may be discarded after the lib directory
+is populated by the script.
