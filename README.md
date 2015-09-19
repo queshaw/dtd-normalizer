@@ -2,6 +2,16 @@
 
 Creates an XML representation of a DTD using XML catalog resolution.
 
+## Usage
+
+java -jar dtd-normalizer-0.1.jar output-file catalog-path source-xml-path
+
+### System properties
+
+dtd-normalizer.comments=(true|false) (default: false)   Adds entity location comments.
+dtd-normalizer.serialization=(xml|dtd) (default: xml)   Selects XML or DTD text output.
+
+
 ## Building
 
 The **get-dependencies.*** scripts use maven to retreive
