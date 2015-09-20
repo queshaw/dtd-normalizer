@@ -120,12 +120,12 @@ public class DtdSerialization extends SerializationMixin
         throws XNIException
     {
         if (isWithComments()) {
-			out("\n<?xml");
+			out("\n<!-- xml");
 			if (version != null && !version.trim().isEmpty())
 				out(" version=\"%s\"", version);
 			if (encoding != null && !encoding.trim().isEmpty())
 				out(" encoding=\"%s\"", encoding);
-			out("?>\n");
+			out(" -->\n");
         }
 	}
 
