@@ -22,5 +22,6 @@ jar {
 }
 
 dependencies {
-  compile fileTree(dir: 'lib', includes: ['*.jar'])
+  compile fileTree(dir: 'lib', includes: ['xml*.jar','xerces*.jar'])
+  testCompile fileTree(dir: 'lib', includes: ['hamcrest*.jar','junit*.jar'])
 }
