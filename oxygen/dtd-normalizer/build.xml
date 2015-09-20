@@ -1,0 +1,53 @@
+<project default="go">
+
+  <condition property="dtd-normalizer.serialization" value="dtd">
+    <not>
+      <isset property="dtd-normalizer.serialization"/>
+    </not>
+  </condition>
+
+  <condition property="dtd-normalizer.comments" value="false">
+    <not>
+      <isset property="dtd-normalizer.comments"/>
+    </not>
+  </condition>
+
+  <fail message="The catalog.path property must be set." unless="catalog.path"/>
+  <fail message="The output.file property must be set." unless="output.file"/>
+  <fail message="The input.file property must be set." unless="input.file"/>
+
+  <fail message="The file ${catalog.path} does not exist.">
+    <condition>
+      <not>
+        <resourceexists>
+          <file file="${catalog.path}"/>
+        </resourceexists>
+      </not>
+    </condition>
+  </fail>
+
+  <fail message="The file ${input.file} does not exist.">
+    <condition>
+      <not>
+        <resourceexists>
+          <file file="${input.file}"/>
+        </resourceexists>
+      </not>
+    </condition>
+  </fail>
+
+  <target name="go">
+    <echo>dtd-normalizer.serialization=${dtd-normalizer.serialization}</echo>
+    <echo>dtd-normalizer.comments=${dtd-normalizer.comments}</echo>
+    <java jar="${basedir}/dtd-normalizer-0.1.jar"
+          failonerror="true"
+          fork="true">
+      <sysproperty key="dtd-normalizer.serialization" value="${dtd-normalizer.serialization}"/>
+      <sysproperty key="dtd-normalizer.comments" value="${dtd-normalizer.comments}"/>
+      <arg value="${output.file}"/>
+      <arg value="${catalog.path}"/>
+      <arg value="${input.file}"/>
+    </java>
+  </target>
+
+</project>

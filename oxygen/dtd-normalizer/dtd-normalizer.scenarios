@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<serialized version="17.0" xml:space="preserve">
+	<map>
+		<entry>
+			<String>scenarios</String>
+			<scenario-array>
+				<antScenario>
+					<field name="additionalAntArgs">
+						<String></String>
+					</field>
+					<field name="buildTarget">
+						<String>go</String>
+					</field>
+					<field name="buildFilePath">
+						<String>${frameworksDir}/dtd-normalizer/build.xml</String>
+					</field>
+					<field name="ditaParams">
+						<list>
+							<antParameter>
+								<field name="name">
+									<String>catalog.path</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML catalog file.</String>
+								</field>
+								<field name="value">
+									<String>${frameworksDir}/dita/DITA-OT/catalog-dita.xml</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.comments</String>
+								</field>
+								<field name="description">
+									<String>Include comments describing where entities were in the input DTD.</String>
+								</field>
+								<field name="value">
+									<String>no</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.serialization</String>
+								</field>
+								<field name="description">
+									<String>Which syntax to use for output (dtd or xml).</String>
+								</field>
+								<field name="value">
+									<String>dtd</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>input.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML file referencing the DTD to be simplified.</String>
+								</field>
+								<field name="value">
+									<String>${cf}</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>output.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the output DTD.</String>
+								</field>
+								<field name="value">
+									<String>${cfd}/${cfn}.simplified.dtd</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+						</list>
+					</field>
+					<field name="jvmArgs">
+						<String>-Xmx256m</String>
+					</field>
+					<field name="useCustomJavaHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customJavaHomeDir">
+						<String></String>
+					</field>
+					<field name="useCustomANTHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customANTHomeDir">
+						<String></String>
+					</field>
+					<field name="workingDir">
+						<String>${cfd}</String>
+					</field>
+					<field name="showConsoleAlways">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="advancedOptionsMap">
+						<null/>
+					</field>
+					<field name="name">
+						<String>DTD Simplifier</String>
+					</field>
+					<field name="baseURL">
+						<null/>
+					</field>
+					<field name="footerURL">
+						<null/>
+					</field>
+					<field name="fOPMethod">
+						<null/>
+					</field>
+					<field name="fOProcessorName">
+						<null/>
+					</field>
+					<field name="headerURL">
+						<null/>
+					</field>
+					<field name="inputXSLURL">
+						<null/>
+					</field>
+					<field name="inputXMLURL">
+						<null/>
+					</field>
+					<field name="defaultScenario">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="isFOPPerforming">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="type">
+						<String>ANT</String>
+					</field>
+					<field name="saveAs">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="openInBrowser">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="outputFile">
+						<null/>
+					</field>
+					<field name="outputResource">
+						<null/>
+					</field>
+					<field name="openOtherLocationInBrowser">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="locationToOpenInBrowserURL">
+						<String>${cfd}/${cfn}.simplified.dtd</String>
+					</field>
+					<field name="openInEditor">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="showInHTMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInXMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInSVGPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInResultSetPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="useXSLTInput">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="xsltParams">
+						<list/>
+					</field>
+					<field name="cascadingStylesheets">
+						<String-array/>
+					</field>
+					<field name="xslTransformer">
+						<String>ANT</String>
+					</field>
+					<field name="extensionURLs">
+						<String-array/>
+					</field>
+				</antScenario>
+				<antScenario>
+					<field name="additionalAntArgs">
+						<String></String>
+					</field>
+					<field name="buildTarget">
+						<String>go</String>
+					</field>
+					<field name="buildFilePath">
+						<String>${frameworksDir}/dtd-normalizer/build.xml</String>
+					</field>
+					<field name="ditaParams">
+						<list>
+							<antParameter>
+								<field name="name">
+									<String>catalog.path</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML catalog file.</String>
+								</field>
+								<field name="value">
+									<String>${frameworksDir}/dita/DITA-OT/catalog-dita.xml</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.comments</String>
+								</field>
+								<field name="description">
+									<String>Include comments describing where entities were in the input DTD.</String>
+								</field>
+								<field name="value">
+									<String>true</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.serialization</String>
+								</field>
+								<field name="description">
+									<String>Which syntax to use for output (dtd or xml).</String>
+								</field>
+								<field name="value">
+									<String>dtd</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>input.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML file referencing the DTD to be simplified.</String>
+								</field>
+								<field name="value">
+									<String>${cf}</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>output.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the output DTD.</String>
+								</field>
+								<field name="value">
+									<String>${cfd}/${cfn}.simplified.dtd</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+						</list>
+					</field>
+					<field name="jvmArgs">
+						<String>-Xmx256m</String>
+					</field>
+					<field name="useCustomJavaHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customJavaHomeDir">
+						<String></String>
+					</field>
+					<field name="useCustomANTHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customANTHomeDir">
+						<String></String>
+					</field>
+					<field name="workingDir">
+						<String>${cfd}</String>
+					</field>
+					<field name="showConsoleAlways">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="advancedOptionsMap">
+						<null/>
+					</field>
+					<field name="name">
+						<String>DTD Simplifier (with entity declaration locations)</String>
+					</field>
+					<field name="baseURL">
+						<null/>
+					</field>
+					<field name="footerURL">
+						<null/>
+					</field>
+					<field name="fOPMethod">
+						<null/>
+					</field>
+					<field name="fOProcessorName">
+						<null/>
+					</field>
+					<field name="headerURL">
+						<null/>
+					</field>
+					<field name="inputXSLURL">
+						<null/>
+					</field>
+					<field name="inputXMLURL">
+						<null/>
+					</field>
+					<field name="defaultScenario">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="isFOPPerforming">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="type">
+						<String>ANT</String>
+					</field>
+					<field name="saveAs">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="openInBrowser">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="outputFile">
+						<null/>
+					</field>
+					<field name="outputResource">
+						<null/>
+					</field>
+					<field name="openOtherLocationInBrowser">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="locationToOpenInBrowserURL">
+						<String>${cfd}/${cfn}.simplified.dtd</String>
+					</field>
+					<field name="openInEditor">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="showInHTMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInXMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInSVGPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInResultSetPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="useXSLTInput">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="xsltParams">
+						<list/>
+					</field>
+					<field name="cascadingStylesheets">
+						<String-array/>
+					</field>
+					<field name="xslTransformer">
+						<String>ANT</String>
+					</field>
+					<field name="extensionURLs">
+						<String-array/>
+					</field>
+				</antScenario>
+				<antScenario>
+					<field name="additionalAntArgs">
+						<String></String>
+					</field>
+					<field name="buildTarget">
+						<String>go</String>
+					</field>
+					<field name="buildFilePath">
+						<String>${frameworksDir}/dtd-normalizer/build.xml</String>
+					</field>
+					<field name="ditaParams">
+						<list>
+							<antParameter>
+								<field name="name">
+									<String>catalog.path</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML catalog file.</String>
+								</field>
+								<field name="value">
+									<String>${frameworksDir}/dita/DITA-OT/catalog-dita.xml</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.comments</String>
+								</field>
+								<field name="description">
+									<String>Include comments describing where entities were in the input DTD.</String>
+								</field>
+								<field name="value">
+									<String>true</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>dtd-normalizer.serialization</String>
+								</field>
+								<field name="description">
+									<String>Which syntax to use for output (dtd or xml).</String>
+								</field>
+								<field name="value">
+									<String>xml</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>input.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the XML file referencing the DTD to be simplified.</String>
+								</field>
+								<field name="value">
+									<String>${cf}</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+							<antParameter>
+								<field name="name">
+									<String>output.file</String>
+								</field>
+								<field name="description">
+									<String>Path to the output DTD representation.</String>
+								</field>
+								<field name="value">
+									<String>${cfd}/${cfn}.dtd.xml</String>
+								</field>
+								<field name="defaultValue">
+									<null/>
+								</field>
+								<field name="type">
+									<Integer>5</Integer>
+								</field>
+								<field name="possibleValues">
+									<null/>
+								</field>
+							</antParameter>
+						</list>
+					</field>
+					<field name="jvmArgs">
+						<String>-Xmx256m</String>
+					</field>
+					<field name="useCustomJavaHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customJavaHomeDir">
+						<String></String>
+					</field>
+					<field name="useCustomANTHome">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="customANTHomeDir">
+						<String></String>
+					</field>
+					<field name="workingDir">
+						<String>${cfd}</String>
+					</field>
+					<field name="showConsoleAlways">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="advancedOptionsMap">
+						<null/>
+					</field>
+					<field name="name">
+						<String>DTD XML representation</String>
+					</field>
+					<field name="baseURL">
+						<null/>
+					</field>
+					<field name="footerURL">
+						<null/>
+					</field>
+					<field name="fOPMethod">
+						<null/>
+					</field>
+					<field name="fOProcessorName">
+						<null/>
+					</field>
+					<field name="headerURL">
+						<null/>
+					</field>
+					<field name="inputXSLURL">
+						<null/>
+					</field>
+					<field name="inputXMLURL">
+						<null/>
+					</field>
+					<field name="defaultScenario">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="isFOPPerforming">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="type">
+						<String>ANT</String>
+					</field>
+					<field name="saveAs">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="openInBrowser">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="outputFile">
+						<null/>
+					</field>
+					<field name="outputResource">
+						<null/>
+					</field>
+					<field name="openOtherLocationInBrowser">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="locationToOpenInBrowserURL">
+						<String>${cfd}/${cfn}.dtd.xml</String>
+					</field>
+					<field name="openInEditor">
+						<Boolean>true</Boolean>
+					</field>
+					<field name="showInHTMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInXMLPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInSVGPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="showInResultSetPane">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="useXSLTInput">
+						<Boolean>false</Boolean>
+					</field>
+					<field name="xsltParams">
+						<list/>
+					</field>
+					<field name="cascadingStylesheets">
+						<String-array/>
+					</field>
+					<field name="xslTransformer">
+						<String>ANT</String>
+					</field>
+					<field name="extensionURLs">
+						<String-array/>
+					</field>
+				</antScenario>
+			</scenario-array>
+		</entry>
+		<entry>
+			<String>scenarios.load.from.project</String>
+			<Boolean>false</Boolean>
+		</entry>
+	</map>
+</serialized>
