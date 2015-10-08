@@ -28,7 +28,7 @@ public class DtdSerialization extends SerializationMixin
 
     private boolean withComments = true;
 
-    private Stack<String> entityStack = new Stack<>();
+    private Stack<String> entityStack = new Stack<String>();
 
 	public DtdSerialization() throws Exception {
         final PrintWriter w = new PrintWriter(System.out);

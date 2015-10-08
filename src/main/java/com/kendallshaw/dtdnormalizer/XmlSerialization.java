@@ -111,7 +111,11 @@ public class XmlSerialization
                     os = uri.toURL().openConnection().getOutputStream();
                 osw = new OutputStreamWriter(os);
                 setXmlWriter(of.createXMLStreamWriter(osw));
-            } catch (MalformedURLException | FactoryConfigurationError e) {
+            } catch (MalformedURLException e) {
+                if (os != null)
+                    os.close();
+                throw new RuntimeException(e);
+            } catch (FactoryConfigurationError e) {
                 if (os != null)
                     os.close();
                 throw new RuntimeException(e);
