@@ -1,0 +1,5 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//KS//DTD Conditional//EN" uri="conditional.dtd"/>
+</catalog>

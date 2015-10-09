@@ -13,16 +13,16 @@ Unzip the zip file somewhere. The result should be similar to:
 Windows:
 
 ```
-c:\somewhere\dtd-normalizer-0.2\dtd-normalizer\build.xml
-c:\somewhere\dtd-normalizer-0.2\dtd-normalizer\dtd-normalizer-0.2.jar
-c:\somewhere\dtd-normalizer-0.2\dtd-normalizer.scenarios
+c:\somewhere\dtd-normalizer-0.3\dtd-normalizer\build.xml
+c:\somewhere\dtd-normalizer-0.3\dtd-normalizer\dtd-normalizer-0.3.jar
+c:\somewhere\dtd-normalizer-0.3\dtd-normalizer.scenarios
 ```
 
 Find the oxygen framework's directory copy the dtd-normalizer directory there. The result should be similar to:
 
 ```
 c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\build.xml
-c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.2.jar
+c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.3.jar
 ```
 
 In Oxygen select *Options->Import* transformation scenarios, select the *dtd-normalizer.scenarios* file that was extracted from the zip file and click okay.
@@ -40,7 +40,7 @@ Note: By default, the transformation scenario uses the DITA framework's catalog.
 
 ## Command-line usage
 
-java -jar dtd-normalizer-0.2.jar output-file catalog-path source-xml-path
+java -jar dtd-normalizer-0.3.jar output-file catalog-path source-xml-path
 
 ### System properties
 

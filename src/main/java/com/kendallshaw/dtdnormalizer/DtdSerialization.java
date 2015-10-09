@@ -159,16 +159,18 @@ public class DtdSerialization extends SerializationMixin
 	public void startConditionalSection(String condition)
         throws XNIException
     {
-        if (isWithComments())
+        if (isWithComments()) {
             locationComment();
-        out("\n<![%s[\n", condition);
+            out("\n<!-- [%s[ -->\n", condition.toUpperCase());
+        }
 	}
 
 	@Override
 	public void endConditionalSection() {
-        if (isWithComments())
+        if (isWithComments()) {
             locationComment();
-        out("]]>\n");
+            out("<!-- ]] -->\n");
+        }
 	}
 
 	@Override

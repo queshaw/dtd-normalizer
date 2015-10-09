@@ -1,0 +1,10 @@
+<!ELEMENT conditional EMPTY>
+<![IGNORE[
+<!ATTLIST conditional id ID #REQUIRED>
+]]>
+<![INCLUDE[
+<!ATTLIST conditional id ID #IMPLIED>
+<![IGNORE[
+<!ATTLIST conditional rid IDREF #IMPLIED>
+]]>
+]]>
