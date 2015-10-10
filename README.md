@@ -4,7 +4,9 @@ Creates an XML representation of a DTD using XML catalog resolution.
 
 ## Oxygen
 
-The distribution contains a file *dtd-normalizer.scenarios* which can be used to add transformation scenarios to Oxygen (tested with version 17).
+The distribution contains a file *dtd-normalizer.scenarios* which can
+be used to add transformation scenarios to Oxygen (tested with version
+17).
 
 ### Integration
 
@@ -18,20 +20,29 @@ c:\somewhere\dtd-normalizer-0.4\dtd-normalizer\dtd-normalizer-0.4.jar
 c:\somewhere\dtd-normalizer-0.4\dtd-normalizer.scenarios
 ```
 
-Find the oxygen framework's directory copy the dtd-normalizer directory there. The result should be similar to:
+Find the oxygen framework's directory copy the dtd-normalizer
+directory there. The result should be similar to:
 
 ```
 c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\build.xml
 c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.4.jar
 ```
 
-In Oxygen select *Options->Import* transformation scenarios, select the *dtd-normalizer.scenarios* file that was extracted from the zip file and click okay.
+In Oxygen select *Options->Import* transformation scenarios, select
+the *dtd-normalizer.scenarios* file that was extracted from the zip
+file and click okay.
 
-After opening the secenarios file, Oxygen will allow you to choose which of 3 transformation scenarios to import (all, by default). Near the bottom where it says "Storage", select "Global Options", unless you want the transformation scenarios to only be available in a specific project.
+After opening the secenarios file, Oxygen will allow you to choose
+which of 3 transformation scenarios to import (all, by default). Near
+the bottom where it says "Storage", select "Global Options", unless
+you want the transformation scenarios to only be available in a
+specific project.
 
 ### Oxygen usage
 
-Note: By default, the transformation scenario uses the DITA framework's catalog. This can be changed by changing the catalog.path parameter in the transformation scenario.)
+Note: By default, the transformation scenario uses the DITA
+framework's catalog. This can be changed by changing the catalog.path
+parameter in the transformation scenario.)
 
 * Open an XML file that contains a doctype statement.
 * Click the button that looks like a wrench (Configure transformation scenarios).
@@ -60,5 +71,11 @@ Windows:
 
 gradlew
 
-The **dist*** target can be used to retrieve newer
-versions of the dependencies, than those in the lib directory.
+If you already have gradle you might want to first try using gradle
+instead of gradlew. In the case where the server that the URL that the
+gradle wrapper uses doesn't exist for all of eternity, and you don't
+already have gradle, you might have to download and install gradle.
+
+The **dist** target can be used to attempt to retrieve newer versions
+of the dependencies, than those in the lib directory. It is not run
+automatically.
