@@ -20,6 +20,7 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 
+import com.ctc.wstx.stax.WstxOutputFactory;
 import com.kendallshaw.dtdnormalizer.attributes.AttributeDeclaration;
 import com.kendallshaw.dtdnormalizer.attributes.AttributeDeclarationWriter;
 import com.kendallshaw.dtdnormalizer.attributes.AttributeEnumeration;
@@ -36,15 +37,17 @@ public class XmlSerialization
 
     private XMLLocator locator;
 
+    private boolean beforeOpen = true;
+
     public XmlSerialization() throws Exception {
-        final XMLOutputFactory of = XMLOutputFactory.newInstance();
+        final XMLOutputFactory of = WstxOutputFactory.newInstance();
         final PrintWriter w = new PrintWriter(System.out);
         setSerializationWriter(w);
         setXmlWriter(of.createXMLStreamWriter(w));
     }
 
     public XmlSerialization(final File f) throws Exception {
-        final XMLOutputFactory of = XMLOutputFactory.newInstance();
+        final XMLOutputFactory of = WstxOutputFactory.newInstance();
         if (f == null) {
             final PrintWriter pw = new PrintWriter(System.out);
             setSerializationWriter(pw);
@@ -98,36 +101,39 @@ public class XmlSerialization
     public void resetTargetResource(URI uri)
         throws IOException, XMLStreamException
     {
-        flush();
-        OutputStream os = null;
-        OutputStreamWriter osw = null;
-        try {
+    	if (!beforeOpen) {
+            flush();
+            OutputStream os = null;
+            OutputStreamWriter osw = null;
             try {
-                getXmlWriter().close();
-                final XMLOutputFactory of = XMLOutputFactory.newInstance();
-                if (uri.getScheme().equals("file"))
-                    os = new FileOutputStream(new File(uri));
-                else
-                    os = uri.toURL().openConnection().getOutputStream();
-                osw = new OutputStreamWriter(os);
-                setXmlWriter(of.createXMLStreamWriter(osw));
-            } catch (MalformedURLException e) {
-                if (os != null)
-                    os.close();
-                throw new RuntimeException(e);
-            } catch (FactoryConfigurationError e) {
-                if (os != null)
-                    os.close();
+                try {
+                    getXmlWriter().close();
+                    final XMLOutputFactory of = WstxOutputFactory.newInstance();
+                    if (uri.getScheme().equals("file"))
+                        os = new FileOutputStream(new File(uri));
+                    else
+                        os = uri.toURL().openConnection().getOutputStream();
+                    osw = new OutputStreamWriter(os);
+                    setXmlWriter(of.createXMLStreamWriter(osw));
+                } catch (MalformedURLException e) {
+                    if (os != null)
+                        os.close();
+                    throw new RuntimeException(e);
+                } catch (FactoryConfigurationError e) {
+                    if (os != null)
+                        os.close();
+                    throw new RuntimeException(e);
+                }
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    	}
     }
 
     @Override
     public void startDocument(final String root) throws XNIException {
         try {
+        	beforeOpen = false;
             final XMLStreamWriter w = getXmlWriter();
             w.writeStartDocument();
             w.writeStartElement(root);
@@ -267,7 +273,7 @@ public class XmlSerialization
                                                entityReference);
                     entityReference = null;
                     inEntityReference = false;
-                } else if ("%".equals(t)) {
+                } else if ("%".equals(t) || "&#".equals(t)) {
                     inEntityReference = true;
                 } else if (inEntityReference) {
                     entityReference = t;
@@ -448,30 +454,6 @@ public class XmlSerialization
             element("method", se.getMethodName());
             element("line-number", "" + se.getLineNumber());
             endElement();
-            /*
-            if (!fileName.equals(previousFile)) {
-                if (previousFile != null) {
-                    if (previousClass != null) {
-                        endElement();
-                        previousClass = null;
-                    }
-                    endElement();
-                }
-                startElement("file");
-                attribute("name", fileName);
-                previousFile = fileName;
-            }
-            if (!previousClass.equals(className)) {
-                if (className != null)
-                    endElement();
-            }
-            startElement("frame");
-            endElement();
-        }
-        if (previousFile != null)
-            endElement();
-        endElement();
-        */
         }
     }
 

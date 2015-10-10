@@ -1,0 +1,4 @@
+<!ENTITY bork 'bork'>
+<!ENTITY text 'Abc &amp; (&#x1D35;) 123 &bork; xyz &#x1D35;'>
+
+<!ELEMENT test (#PCDATA)>

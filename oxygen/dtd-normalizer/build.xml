@@ -39,11 +39,14 @@
   <target name="go">
     <echo>dtd-normalizer.serialization=${dtd-normalizer.serialization}</echo>
     <echo>dtd-normalizer.comments=${dtd-normalizer.comments}</echo>
-    <java jar="${basedir}/dtd-normalizer-0.3.jar"
+    <java classname="com.kendallshaw.dtdnormalizer.CommandLine"
           failonerror="true"
           fork="true">
       <sysproperty key="dtd-normalizer.serialization" value="${dtd-normalizer.serialization}"/>
       <sysproperty key="dtd-normalizer.comments" value="${dtd-normalizer.comments}"/>
+      <classpath>
+        <fileset dir="." includes="dtd-normalizer*.jar"/>
+      </classpath>
       <arg value="${output.file}"/>
       <arg value="${catalog.path}"/>
       <arg value="${input.file}"/>

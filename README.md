@@ -13,16 +13,16 @@ Unzip the zip file somewhere. The result should be similar to:
 Windows:
 
 ```
-c:\somewhere\dtd-normalizer-0.3\dtd-normalizer\build.xml
-c:\somewhere\dtd-normalizer-0.3\dtd-normalizer\dtd-normalizer-0.3.jar
-c:\somewhere\dtd-normalizer-0.3\dtd-normalizer.scenarios
+c:\somewhere\dtd-normalizer-0.4\dtd-normalizer\build.xml
+c:\somewhere\dtd-normalizer-0.4\dtd-normalizer\dtd-normalizer-0.4.jar
+c:\somewhere\dtd-normalizer-0.4\dtd-normalizer.scenarios
 ```
 
 Find the oxygen framework's directory copy the dtd-normalizer directory there. The result should be similar to:
 
 ```
 c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\build.xml
-c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.3.jar
+c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.4.jar
 ```
 
 In Oxygen select *Options->Import* transformation scenarios, select the *dtd-normalizer.scenarios* file that was extracted from the zip file and click okay.
@@ -40,7 +40,7 @@ Note: By default, the transformation scenario uses the DITA framework's catalog.
 
 ## Command-line usage
 
-java -jar dtd-normalizer-0.3.jar output-file catalog-path source-xml-path
+java -jar dtd-normalizer-0.4.jar output-file catalog-path source-xml-path
 
 ### System properties
 
@@ -60,10 +60,5 @@ Windows:
 
 gradlew
 
-The **get-dependencies.*** scripts can be used to retrieve newer
+The **dist*** target can be used to retrieve newer
 versions of the dependencies, than those in the lib directory.
-
-The scripts use maven to retreive dependencies The result should be
-that jars are put in a lib directory. The m2 and target directories
-that should also be created may be discarded after the lib directory
-is populated by the script.

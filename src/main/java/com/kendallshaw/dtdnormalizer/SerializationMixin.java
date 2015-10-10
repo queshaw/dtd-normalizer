@@ -11,7 +11,7 @@ import org.apache.xerces.xni.XNIException;
 
 public class SerializationMixin {
 
-    protected final static Pattern EREX = Pattern.compile("%([_a-zA-Z][-._a-zA-Z0-9]*);");
+    protected final static Pattern EREX = Pattern.compile("(%|&#)([^\\s;]+);");
 
     protected final static String ATTLIST = "ATTLIST";
 
@@ -72,8 +72,8 @@ public class SerializationMixin {
     		int start = m.start();
     		end = m.end();
     		strings.add(normalizedText(text.substring(prev, start)));
-            strings.add("%");
-            strings.add(normalizedText(m.group(1)));
+            strings.add(m.group(1));
+            strings.add(m.group(2));
             strings.add(";");
     		prev = end;
     	}

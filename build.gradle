@@ -2,17 +2,49 @@
 
 apply plugin: 'java'
 
-version = 0.3
+version = 0.4
+
+description = 'DTD simplifier'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
-defaultTasks 'jar'
+ext {
+  distribution = 'dtd-normalizer'
+}
+
+defaultTasks 'clean', 'dist'
+
+configurations {
+  jarsCompile
+  jarsTest
+}
+
+task dist(type: Zip, dependsOn: 'assemble-dist') {
+  description = 'Creates a zip archive of the distributable.'
+  destinationDir = file('dist')
+  from "${project.buildDir}/dist"
+}
+
+task 'assemble-dist'(type: Copy, dependsOn: jar) {
+  description = 'Assembles a distributable in the dist directory.'
+  from "oxygen/${distribution}.scenarios"
+  into "${project.buildDir}/dist"
+  with project.copySpec {
+         from "oxygen/${distribution}/build.xml"
+         from jar.outputs.files()
+         from configurations.compile
+         include "**/*.LICENSE*"
+         include "**/build.xml"
+         include "**/${distribution}-${version}.jar"
+         into distribution
+  }
+}
 
 jar {
-  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  from { configurations.compile.collect { it.isDirectory() || it.name.endsWith('.txt') ? it : zipTree(it) } }
   manifest {
-    attributes 'Implementation-Title': 'dtd-normalizer',
+    attributes 'Implementation-Title': distribution,
                'Implementation-Version': version,
                'Built-By': 'Kendall Shaw',
                'Built-Date': new Date(), 
@@ -21,7 +53,38 @@ jar {
   }
 }
 
+// This is not invoked automatically
+
+task dependencies(dependsOn: 'dependencies.test') {
+  description = 'Attempts to download dependencies newer than those in lib.'
+}
+
+task 'dependencies.compile'(type: Copy) {
+  description = 'Attempts to download the distribution dependencies.'
+  from configurations.jarsCompile
+  into 'local-lib/compile'
+}
+
+task 'dependencies.test'(type: Copy, dependsOn: 'dependencies.compile') {
+  description = 'Attempts to download the test dependencies.'
+  from configurations.jarsTest
+  into 'local-lib/test'
+}
+
+repositories {
+  jcenter()
+}
+
 dependencies {
-  compile fileTree(dir: 'lib', includes: ['xml*.jar','xerces*.jar'])
-  testCompile fileTree(dir: 'lib', includes: ['hamcrest*.jar','junit*.jar'])
+  compile fileTree('local-lib/compile')
+  compile fileTree('lib/compile')
+
+  testCompile fileTree('local-lib/test')
+  testCompile fileTree('lib/test')
+
+  jarsCompile group: 'com.fasterxml.woodstox', name: 'woodstox-core', version: '[5.0.1,)'
+  jarsCompile group: 'xerces', name: 'xercesImpl', version: '[2.11.0,)'
+  jarsCompile group: 'xml-resolver', name: 'xml-resolver', version: '[1.2,)'
+
+  jarsTest group: 'junit', name: 'junit', version: '[4.12,)'
 }
