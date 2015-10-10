@@ -57,10 +57,10 @@ public interface Serialization {
                                    String publicId, String systemId)
         throws XNIException;
 
-    void startEntity(String name)
+    void startEntity(String name, boolean include)
         throws XNIException;
 
-    void endEntity()
+    void endEntity(boolean include)
         throws XNIException;
 
     void elementDeclaration(String name, String contentModel)

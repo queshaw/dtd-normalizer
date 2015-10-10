@@ -1,4 +1,4 @@
-package com.kendallshaw.dtdnormalizer;
+gpackage com.kendallshaw.dtdnormalizer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -30,12 +30,14 @@ public class DtdSerialization extends SerializationMixin
 
     private Stack<String> entityStack = new Stack<String>();
 
-	public DtdSerialization() throws Exception {
+    private boolean include = false;
+
+    public DtdSerialization() throws Exception {
         final PrintWriter w = new PrintWriter(System.out);
         setSerializationWriter(w);
-	}
+    }
 
-	public DtdSerialization(File f) throws Exception {
+    public DtdSerialization(File f) throws Exception {
         FileOutputStream fos = null;
         OutputStreamWriter osw = null;
         BufferedWriter bw = null;
@@ -49,47 +51,47 @@ public class DtdSerialization extends SerializationMixin
                 fos.close();
             throw e;
         }
-	}
+    }
 
-	@Override
-	public Writer getSerializationWriter() {
-		return writer;
-	}
+    @Override
+    public Writer getSerializationWriter() {
+        return writer;
+    }
 
-	@Override
-	public void setSerializationWriter(Writer w) {
+    @Override
+    public void setSerializationWriter(Writer w) {
         writer = w;
-	}
+    }
 
-	@Override
-	public XMLLocator getLocator() {
-		return locator;
-	}
+    @Override
+    public XMLLocator getLocator() {
+        return locator;
+    }
 
-	@Override
-	public void setLocator(XMLLocator loc) {
+    @Override
+    public void setLocator(XMLLocator loc) {
         locator = loc;
-	}
+    }
 
     public boolean isWithComments() {
-		return withComments;
-	}
+        return withComments;
+    }
 
-	public void setWithComments(boolean c) {
-		withComments = c;
-	}
+    public void setWithComments(boolean c) {
+        withComments = c;
+    }
 
-	@Override
-	public void resetTargetResource(URI uri) throws Exception {
-	}
+    @Override
+    public void resetTargetResource(URI uri) throws Exception {
+    }
 
-	@Override
-	public void startDocument(String root) throws XNIException {
+    @Override
+    public void startDocument(String root) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void endDocument() throws XNIException {
+    @Override
+    public void endDocument() throws XNIException {
         try {
             Writer w = getSerializationWriter();
             w.flush();
@@ -97,40 +99,40 @@ public class DtdSerialization extends SerializationMixin
         } catch (Exception e) {
             throw new XNIException(e);
         }
-	}
+    }
 
-	@Override
-	public void xmlDeclaration(String version, String encoding,
+    @Override
+    public void xmlDeclaration(String version, String encoding,
                                String standalone)
         throws XNIException
     {
         // ignored
-	}
+    }
 
-	@Override
-	public void doctypeDeclaration(String root, String publicId,
+    @Override
+    public void doctypeDeclaration(String root, String publicId,
                                    String systemId)
         throws XNIException
     {
         // ignored
-	}
+    }
 
-	@Override
-	public void textDeclaration(String version, String encoding)
+    @Override
+    public void textDeclaration(String version, String encoding)
         throws XNIException
     {
         if (isWithComments()) {
-			out("\n<!-- xml");
-			if (version != null && !version.trim().isEmpty())
-				out(" version=\"%s\"", version);
-			if (encoding != null && !encoding.trim().isEmpty())
-				out(" encoding=\"%s\"", encoding);
-			out(" -->\n");
+            out("\n<!-- xml");
+            if (version != null && !version.trim().isEmpty())
+                out(" version=\"%s\"", version);
+            if (encoding != null && !encoding.trim().isEmpty())
+                out(" encoding=\"%s\"", encoding);
+            out(" -->\n");
         }
-	}
+    }
 
-	@Override
-	public void comment(String fmt, Object... args)
+    @Override
+    public void comment(String fmt, Object... args)
         throws XNIException
     {
         if (isWithComments()) {
@@ -141,10 +143,10 @@ public class DtdSerialization extends SerializationMixin
                 out("<!--" + fmt + "-->\n", args);
         }
 
-	}
+    }
 
-	@Override
-	public void processingIntruction(String target, XMLString data)
+    @Override
+    public void processingIntruction(String target, XMLString data)
         throws XNIException
     {
         if (isWithComments())
@@ -153,57 +155,63 @@ public class DtdSerialization extends SerializationMixin
             out("<?%s?>\n", target);
         else
             out("<?%s %s?>\n", target, data);
-	}
+    }
 
-	@Override
-	public void startConditionalSection(String condition)
+    @Override
+    public void startConditionalSection(String condition)
         throws XNIException
     {
         if (isWithComments()) {
             locationComment();
             out("\n<!-- [%s[ -->\n", condition.toUpperCase());
         }
-	}
+    }
 
-	@Override
-	public void endConditionalSection() {
+    @Override
+    public void endConditionalSection() {
         if (isWithComments()) {
             locationComment();
             out("<!-- ]] -->\n");
         }
-	}
+    }
 
-	@Override
-	public void startExternalSubset() throws XNIException {
+    @Override
+    public void startExternalSubset() throws XNIException {
         // TODO: handle internal subset
-	}
+    }
 
-	@Override
-	public void endExternalSubset() throws XNIException {
+    @Override
+    public void endExternalSubset() throws XNIException {
         // TODO: handle internal subset
-	}
+    }
 
-	@Override
-	public void internalEntityDeclaration(String name, XMLString text,
+    @Override
+    public void internalEntityDeclaration(String name, XMLString text,
                                           XMLString rawText)
         throws XNIException
     {
+        boolean parameterEntity = name.startsWith("%");
+        final String entityName = parameterEntity ? "% "
+                                + name.substring(1) : name;
+        final String textString = text.toString();
+        final String rawString = rawText.toString();
+        if (isWithComments())
+            locationComment();
+        if (include && !parameterEntity) {
+            out(String.format("<!ENTITY %s \"%s\">\n", name, rawString.replaceAll("\"", "&#x22;")));
+        }
         if (isWithComments()) {
             locationComment();
-            final String entityName = name.startsWith("%") ? "% "
-                    + name.substring(1) : name;
-            final String textString = text.toString();
-            final String rawString = rawText.toString();
             out("<!-- ENTITY: %s", entityName);
             if (textString.equals(rawString))
                 out(" [%s] -->\n", normalizedText(textString));
             else
                 out("\n           [%s] -->\n", rawEntityText(rawString));
         }
-	}
+    }
 
-	@Override
-	public void externalEntityDeclaration(String name, String publicId,
+    @Override
+    public void externalEntityDeclaration(String name, String publicId,
                                           String systemId)
         throws XNIException
     {
@@ -218,50 +226,52 @@ public class DtdSerialization extends SerializationMixin
                 out(" PUBLIC \"%s\" \"%s\"", publicId, systemId);
             out("-->\n");
         }
-	}
+    }
 
-	@Override
-	public void startEntity(String name) throws XNIException {
+    @Override
+    public void startEntity(String name, boolean include) throws XNIException {
+        this.include = include;
         entityStack.push(name);
         if (isWithComments()) {
             locationComment();
             out("<!-- start of entity %s -->\n", name);
         }
-	}
+    }
 
-	@Override
-	public void endEntity() throws XNIException {
+    @Override
+    public void endEntity(boolean include) throws XNIException {
+        this.include = include;
         if (isWithComments()) {
             locationComment();
             out("<!-- end of entity %s -->\n\n", entityStack.pop());
         }
-	}
+    }
 
-	@Override
-	public void elementDeclaration(String name, String contentModel)
+    @Override
+    public void elementDeclaration(String name, String contentModel)
         throws XNIException
     {
         if (isWithComments())
             locationComment();
         out("<!ELEMENT %s %s>\n", name, contentModel);
-	}
+    }
 
-	@Override
-	public void startAttributeListDeclaration(String name)
+    @Override
+    public void startAttributeListDeclaration(String name)
         throws XNIException
     {
         if (isWithComments())
             locationComment();
         out("<!ATTLIST %s", name);
-	}
+    }
 
-	@Override
-	public void endAttributeListDeclaration() throws XNIException {
+    @Override
+    public void endAttributeListDeclaration() throws XNIException {
         out(">\n");
-	}
+    }
 
-	@Override
-	public void attributeDeclaration(String name, String type,
+    @Override
+    public void attributeDeclaration(String name, String type,
                                      String[] enumeration,
                                      String defaultType,
                                      XMLString defaultValue)
@@ -269,7 +279,7 @@ public class DtdSerialization extends SerializationMixin
     {
         out("\n          %s", name);
         if (enumeration == null) {
-        	if (CDATA == type) out(" %s", CDATA);
+            if (CDATA == type) out(" %s", CDATA);
             else if (ID == type) out(" %s", ID);
             else if (IDREF == type) out(" %s", IDREF);
             else if (IDREFS == type) out(" %s", IDREFS);
@@ -300,90 +310,90 @@ public class DtdSerialization extends SerializationMixin
                 out(" %s", FIXED);
             out(" \"%s\"", defaultValue.toString().replaceAll("\"", "'"));
         }
-	}
+    }
 
-	@Override
-	public void redefinition(String entityName) throws XNIException {
+    @Override
+    public void redefinition(String entityName) throws XNIException {
         if (isWithComments()) {
             locationComment();
             out("<!-- redefinition of %s -->\n", entityName);
         }
-	}
+    }
 
-	@Override
-	public void startElement(String name) throws XNIException {
+    @Override
+    public void startElement(String name) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void endElement() throws XNIException {
+    @Override
+    public void endElement() throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void emptyElement(String name) throws XNIException {
+    @Override
+    public void emptyElement(String name) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void element(String name, String text) throws XNIException {
+    @Override
+    public void element(String name, String text) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void attribute(String name, String text)
+    @Override
+    public void attribute(String name, String text)
         throws XNIException
     {
         // ignored
-	}
+    }
 
-	@Override
-	public void text(String text) throws XNIException {
+    @Override
+    public void text(String text) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void stackTrace(Exception e) throws XNIException {
+    @Override
+    public void stackTrace(Exception e) throws XNIException {
         // ignored
-	}
+    }
 
-	@Override
-	public void flush() throws XNIException {
+    @Override
+    public void flush() throws XNIException {
         try {
-			getSerializationWriter().flush();
-		} catch (IOException e) {
-			throw new XNIException(e);
-		}
-	}
+            getSerializationWriter().flush();
+        } catch (IOException e) {
+            throw new XNIException(e);
+        }
+    }
 
-	@Override
-	public void writeAttributeDeclaration(AttributeDeclaration d)
+    @Override
+    public void writeAttributeDeclaration(AttributeDeclaration d)
         throws XNIException
     {
         // ignored
-	}
+    }
 
     protected String rawEntityText(final String text) {
-    	final StringBuilder splitText = new StringBuilder();
-    	final Matcher m = EREX.matcher(text);
-    	int end = 0;
-    	int prev = 0;
-    	while (m.find(end)) {
-    		int start = m.start();
-    		end = m.end();
-    		final String prefix = text.substring(prev, start);
-    		final String match = text.substring(start, end);
-    		splitText.append(normalizedText(prefix));
-    		if (start > prev)
-    			splitText.append("\n            ");
-    		splitText.append(normalizedText(match));
-    		prev = end;
-    	}
-    	if (end > 0)
-    		splitText.append(normalizedText(text.substring(end)));
-    	return splitText.toString();
+        final StringBuilder splitText = new StringBuilder();
+        final Matcher m = EREX.matcher(text);
+        int end = 0;
+        int prev = 0;
+        while (m.find(end)) {
+            int start = m.start();
+            end = m.end();
+            final String prefix = text.substring(prev, start);
+            final String match = text.substring(start, end);
+            splitText.append(normalizedText(prefix));
+            if (start > prev)
+                splitText.append("\n            ");
+            splitText.append(normalizedText(match));
+            prev = end;
+        }
+        if (end > 0)
+            splitText.append(normalizedText(text.substring(end)));
+        return splitText.toString();
     }
-    
+
     protected void locationComment() throws XNIException {
         locationComment(null, null);
     }
@@ -410,22 +420,22 @@ public class DtdSerialization extends SerializationMixin
 
     protected void externalIdentifier(final String p, final String s) {
         if (p != null && !"".equals(p))
-        	out("<!-- public-id: " + p + " -->\n");
+            out("<!-- public-id: " + p + " -->\n");
         out("<!-- system-id: " + s + " -->\n");
     }
 
     protected void out(final String fmt, final Object... args)
         throws XNIException
     {
-    	try {
-			Writer w = getSerializationWriter();
-			if (args.length == 0)
-			    w.append(fmt);
-			else
-			    w.append(String.format(fmt, args));
-		} catch (IOException e) {
-			throw new XNIException(e);
-		}
+        try {
+            Writer w = getSerializationWriter();
+            if (args.length == 0)
+                w.append(fmt);
+            else
+                w.append(String.format(fmt, args));
+        } catch (IOException e) {
+            throw new XNIException(e);
+        }
         flush();
     }
 

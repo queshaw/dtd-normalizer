@@ -15,9 +15,9 @@ Unzip the zip file somewhere. The result should be similar to:
 Windows:
 
 ```
-c:\somewhere\dtd-normalizer-0.4\dtd-normalizer\build.xml
-c:\somewhere\dtd-normalizer-0.4\dtd-normalizer\dtd-normalizer-0.4.jar
-c:\somewhere\dtd-normalizer-0.4\dtd-normalizer.scenarios
+c:\somewhere\dtd-normalizer-0.5\dtd-normalizer\build.xml
+c:\somewhere\dtd-normalizer-0.5\dtd-normalizer\dtd-normalizer-0.5.jar
+c:\somewhere\dtd-normalizer-0.5\dtd-normalizer.scenarios
 ```
 
 Find the oxygen framework's directory copy the dtd-normalizer
@@ -25,7 +25,7 @@ directory there. The result should be similar to:
 
 ```
 c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\build.xml
-c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.4.jar
+c:\Program Files\Oxygen 17.0\frameworks\dtd-normalizer\dtd-normalizer-0.5.jar
 ```
 
 In Oxygen select *Options->Import* transformation scenarios, select
@@ -51,13 +51,16 @@ parameter in the transformation scenario.)
 
 ## Command-line usage
 
-java -jar dtd-normalizer-0.4.jar output-file catalog-path source-xml-path
+java -jar dtd-normalizer-0.5.jar output-file catalog-path source-xml-path
 
 ### System properties
 
-dtd-normalizer.comments=(true|false) (default: false)   Adds entity location comments.
-dtd-normalizer.serialization=(xml|dtd) (default: xml)   Selects XML or DTD text output.
-
+| Property                                            | Default   | Description                                              |
+|:----------------------------------------------------|:----------|:---------------------------------------------------------|
+| `dtd-normalizer.comments` = (`true`&#124;`false`)   | `false`   | Adds entity location comments.                           |
+| `dtd-normalizer.serialization` = (`xml`&#124;`dtd`) | `xml`     | Selects XML or DTD text output.                          |
+| `dtd-normalizer.entities` = path                    |           | Specifies a file containing a list of public identifiers |
+|                                                     |           | of entity sets to be included in the DTD serialization.  |
 
 ## Building
 

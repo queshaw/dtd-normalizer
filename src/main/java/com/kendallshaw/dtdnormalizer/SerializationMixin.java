@@ -56,7 +56,7 @@ public class SerializationMixin {
         ps.close();
         //out(baos.toString());
     }
-    
+
     public String normalizedText(final String text)
         throws XNIException
     {
@@ -65,20 +65,20 @@ public class SerializationMixin {
 
     public List<String> entityText(final String text) {
         final List<String> strings = new ArrayList<String>();
-    	final Matcher m = EREX.matcher(text);
-    	int end = 0;
-    	int prev = 0;
-    	while (m.find(end)) {
-    		int start = m.start();
-    		end = m.end();
-    		strings.add(normalizedText(text.substring(prev, start)));
+        final Matcher m = EREX.matcher(text);
+        int end = 0;
+        int prev = 0;
+        while (m.find(end)) {
+            int start = m.start();
+            end = m.end();
+            strings.add(normalizedText(text.substring(prev, start)));
             strings.add(m.group(1));
             strings.add(m.group(2));
             strings.add(";");
-    		prev = end;
-    	}
-    	if (end > 0)
-    		strings.add(normalizedText(text.substring(end)));
-    	return strings;
+            prev = end;
+        }
+        if (end > 0)
+            strings.add(normalizedText(text.substring(end)));
+        return strings;
     }
 }

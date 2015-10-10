@@ -12,7 +12,7 @@ public enum Constants {
     ELEMENT_DECLARATION("element-declaration"),
     ATTRIBUTE_LIST_DECLARATION("attribute-list-declaration"),
     REDEFINITION("redefinition"),
-    STACK_TRACE("stack-trace"),	
+    STACK_TRACE("stack-trace"),
     MESSAGE("message"),
     FRAME("frame"),
     CLASS("class"),

@@ -1,4 +1,9 @@
 <!ENTITY bork 'bork'>
 <!ENTITY text 'Abc &amp; (&#x1D35;) 123 &bork; xyz &#x1D35;'>
+<!ENTITY asdf "'">
+<!ENTITY other "a&asdf;">
 
 <!ELEMENT test (#PCDATA)>
+<!ATTLIST test
+          a CDATA #FIXED '"asdf&#x22;&#x27;'>
+

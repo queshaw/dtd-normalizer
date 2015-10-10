@@ -63,12 +63,12 @@ public class XmlSerialization
 
     public XmlSerialization(final Writer w) throws Exception {
         final XMLOutputFactory of = XMLOutputFactory.newInstance();
-        setSerializationWriter(w);      
+        setSerializationWriter(w);
         setXmlWriter(of.createXMLStreamWriter(w));
     }
 
     protected XmlSerialization(final XMLStreamWriter w) throws Exception {
-        setXmlWriter(w);    
+        setXmlWriter(w);
     }
 
     public Writer getSerializationWriter() {
@@ -101,7 +101,7 @@ public class XmlSerialization
     public void resetTargetResource(URI uri)
         throws IOException, XMLStreamException
     {
-    	if (!beforeOpen) {
+        if (!beforeOpen) {
             flush();
             OutputStream os = null;
             OutputStreamWriter osw = null;
@@ -127,19 +127,19 @@ public class XmlSerialization
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-    	}
+        }
     }
 
     @Override
     public void startDocument(final String root) throws XNIException {
         try {
-        	beforeOpen = false;
+            beforeOpen = false;
             final XMLStreamWriter w = getXmlWriter();
             w.writeStartDocument();
             w.writeStartElement(root);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     @Override
@@ -157,7 +157,7 @@ public class XmlSerialization
             throw new XNIException("Error closing Writer", e);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     @Override
@@ -173,7 +173,7 @@ public class XmlSerialization
                 w.writeAttribute("encoding", encoding);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     @Override
@@ -189,7 +189,7 @@ public class XmlSerialization
             w.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     @Override
@@ -206,7 +206,7 @@ public class XmlSerialization
     public void processingIntruction(final String target, final XMLString data)
         throws XNIException
     {
-        startElement("processing-instruction");        
+        startElement("processing-instruction");
         attribute("target", target);
         attribute("data", data.toString());
         locationElement();
@@ -305,11 +305,11 @@ public class XmlSerialization
             w.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     @Override
-    public void startEntity(String name)
+    public void startEntity(String name, boolean include)
         throws XNIException
     {
         startElement("entity");
@@ -318,7 +318,7 @@ public class XmlSerialization
     }
 
     @Override
-    public void endEntity()
+    public void endEntity(boolean include)
         throws XNIException
     {
         endElement();
@@ -328,10 +328,10 @@ public class XmlSerialization
     public void elementDeclaration(String name, String contentModel)
         throws XNIException
     {
-    	startElement("element-declaration");
+        startElement("element-declaration");
         attribute("name", name);
         locationElement();
-        element("content-model", contentModel);    
+        element("content-model", contentModel);
         endElement();
     }
 
@@ -375,7 +375,7 @@ public class XmlSerialization
             w.writeStartElement(name);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void endElement() throws XNIException {
@@ -384,7 +384,7 @@ public class XmlSerialization
             w.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void emptyElement(final String name) throws XNIException {
@@ -393,7 +393,7 @@ public class XmlSerialization
             w.writeEmptyElement(name);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void element(final String name, final String text)
@@ -406,7 +406,7 @@ public class XmlSerialization
             w.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void attribute(final String name, final String text)
@@ -431,7 +431,7 @@ public class XmlSerialization
             w.writeCharacters(stripped);
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void flush()
@@ -441,7 +441,7 @@ public class XmlSerialization
             getXmlWriter().flush();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
-        }   
+        }
     }
 
     public void stackTrace(final Exception e) {
@@ -521,7 +521,7 @@ public class XmlSerialization
     {
         final XMLLocator loc = getLocator();
         if (loc != null) {
-            if (systemId == null) 
+            if (systemId == null)
                 emptyElement("location");
             else {
                 startElement("location");

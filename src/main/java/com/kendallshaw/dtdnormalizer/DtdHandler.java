@@ -8,8 +8,10 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.xerces.xni.Augmentations;
@@ -32,6 +34,14 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     private Map<String, EntityType> entityNames =
             new Hashtable<String, EntityType>();
+
+    private Set<String> inclusionPublicIds =
+        new HashSet<String>();
+
+    private int inclusionDepth = 0;
+
+    private Set<String> inclusionEntityNames =
+            new HashSet<String>();
 
     private Stack<String> entityStack = new Stack<String>();
 
@@ -61,7 +71,7 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
 
         @Override
         public void setDTDContentModelHandler(XMLDTDContentModelHandler h) {
-            configuration.setDTDContentModelHandler(h);           
+            configuration.setDTDContentModelHandler(h);
         }
     };
 
@@ -71,7 +81,7 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
     public DtdHandler(final Serialization log, final XniConfiguration cfg)
         throws Exception
     {
-        setSerializer(log);     
+        setSerializer(log);
         setConfiguration(cfg);
     }
 
@@ -97,6 +107,10 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     public void setSerializer(Serialization logger) {
         this.serializer = logger;
+    }
+
+    public Set<String> inclusionPublicIds() {
+        return inclusionPublicIds;
     }
 
     // XMLDTDHandler protocol
@@ -182,6 +196,8 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
             entityNames.put(name, EntityType.EXTERNAL);
             final String systemId = id.getLiteralSystemId();
             final String publicId = id.getPublicId();
+            if (inclusionPublicIds().contains(publicId))
+                inclusionEntityNames.add(name);
             getSerializer().externalEntityDeclaration(suffix, publicId, systemId);
         }
     }
@@ -206,7 +222,9 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         throws XNIException
     {
         if (EntityType.EXTERNAL == entityNames.get(name)) {
-            getSerializer().startEntity(name);
+            if (inclusionEntityNames.contains(name))
+                ++inclusionDepth;
+            getSerializer().startEntity(name, inclusionDepth > 0);
             entityStack.push(name);
         }
     }
@@ -215,7 +233,9 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
     public void endParameterEntity(String name, Augmentations augmentations)
             throws XNIException {
         if (EntityType.EXTERNAL == entityNames.get(name)) {
-            getSerializer().endEntity();
+            if (inclusionEntityNames.contains(name))
+                --inclusionDepth;
+            getSerializer().endEntity(inclusionDepth > 0);
             entityStack.pop();
         }
     }
@@ -370,14 +390,11 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
             final String base = loc.getBaseSystemId();
             if (!base.equals(currentEntity)) {
                 currentEntity = base;
-                //l.rule();
                 s.comment(" %s ", currentEntity);
-                //l.rule();
-                //l.outln("");
             }
             s.comment(" %s " , resolved);
             s.comment(" Line %s %s ",
-            		  loc.getLineNumber(), loc.getBaseSystemId());
+                      loc.getLineNumber(), loc.getBaseSystemId());
         }
     }
 
@@ -402,25 +419,25 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
                 //l.outln("");
             }
             s.comment(" Line %s %s ",
-            		  loc.getLineNumber(), loc.getBaseSystemId());
+                      loc.getLineNumber(), loc.getBaseSystemId());
         }
     }
 
     public void ancestry(final String prefix) throws XNIException {
-    	final StringBuilder sb = new StringBuilder();
-    	sb.append(" " + prefix + ": [");
-    	boolean first = true;
-    	for (final String entityName : entityStack) {
-    		if (first) {
-    			first = false;
-    			sb.append(entityName);
-    		} else {
-    			sb.append(" / " + entityName);
-    		}
-    	}
-    	sb.append("] ");
-    	final Serialization s = getSerializer();
-    	s.comment(sb.toString());
-    	//l.outln("");
+        final StringBuilder sb = new StringBuilder();
+        sb.append(" " + prefix + ": [");
+        boolean first = true;
+        for (final String entityName : entityStack) {
+            if (first) {
+                first = false;
+                sb.append(entityName);
+            } else {
+                sb.append(" / " + entityName);
+            }
+        }
+        sb.append("] ");
+        final Serialization s = getSerializer();
+        s.comment(sb.toString());
+        //l.outln("");
     }
 }

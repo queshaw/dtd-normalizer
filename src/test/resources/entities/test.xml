@@ -1,2 +1,2 @@
 <!DOCTYPE test PUBLIC "-//KS//DTD Test//EN" "asdf">
-<test>abc</test>
+<test>&other;</test>
