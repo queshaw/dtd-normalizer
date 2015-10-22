@@ -1,0 +1,7 @@
+<!-- -*-mode: nxml-mode -*- -->
+<!DOCTYPE doc SYSTEM "simple.dtd" [
+<!ENTITY asdf 'FDSA'>
+]>
+<doc>
+  <p>Paragraph &asdf;.</p>
+</doc>

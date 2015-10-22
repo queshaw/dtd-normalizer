@@ -1,0 +1,6 @@
+<!ELEMENT doc (image, other-image)>
+<!ATTLIST image data NOTATION (jpeg) #REQUIRED>
+<!ATTLIST other-image data NOTATION (jpeg|png) #REQUIRED>
+
+<!NOTATION jpeg PUBLIC "-//MEDIA JPEG//EN">
+<!NOTATION png PUBLIC "-//MEDIA PNG//EN">

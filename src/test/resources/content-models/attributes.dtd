@@ -1,0 +1,8 @@
+<!ELEMENT doc EMPTY>
+<!ATTLIST doc
+          double-quote CDATA #FIXED "text"
+          single-quote CDATA #FIXED 'text'
+          double-escape CDATA #FIXED "&#x22;"
+          double-quot CDATA #FIXED "&quot;"
+          single-apos CDATA #FIXED '&apos;'
+          single-escape CDATA #FIXED '"'

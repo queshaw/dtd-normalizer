@@ -1,0 +1,11 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog"
+         prefer="public">
+
+  <public publicId="-//KS//ENTITIES Characters//EN" uri="entities/characters.mod"/>
+  <public publicId="-//KS//ENTITIES Unicode//EN" uri="entities/unicode.ent"/>
+  <public publicId="-//KS//ENTITIES Extra//EN" uri="entities/not-these.ent"/>
+  <public publicId="-//KS//ENTITIES Letters//EN" uri="entities/letters.ent"/>
+  <public publicId="-//KS//ENTITIES Numbers//EN" uri="entities/numbers.ent"/>
+  <public publicId="-//KS//ENTITIES Roman Numerals//EN" uri="entities/roman.ent"/>
+  <system systemId="urn:ks:entities:other" uri="entities/other.ent"/>
+</catalog>

@@ -1,0 +1,10 @@
+<!DOCTYPE doc SYSTEM "notation.dtd" [
+<!ENTITY a.jpg SYSTEM "a.jpg" NDATA jpeg>
+<!ENTITY a.png SYSTEM "a.png" NDATA png>
+<!ENTITY b.jpg SYSTEM "b.jpg" NDATA jpeg>
+]>
+<doc>
+  <image data="a.jpg"/>
+  <other-image data="a.png"/>
+  <other-image data="b.jpg"/>
+</doc>

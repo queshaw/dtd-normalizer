@@ -1,0 +1,22 @@
+<!DOCTYPE root SYSTEM "children.dtd">
+<root>
+  <one>
+    <one-or-more/>
+  </one>
+  <content>
+    <inner-content>
+      <optional-content/>
+      <one-or-more-content>
+        <optional/>
+      </one-or-more-content>
+      <zero-or-more-content/>
+    </inner-content>
+    <outter-content>
+      <outter.optional-content/>
+      <outter.one-or-more-content>
+        <optional/>
+      </outter.one-or-more-content>
+      <outter.zero-or-more-content/>
+    </outter-content>
+  </content>
+</root>

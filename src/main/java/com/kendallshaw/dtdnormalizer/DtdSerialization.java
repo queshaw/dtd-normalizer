@@ -1,9 +1,10 @@
-gpackage com.kendallshaw.dtdnormalizer;
+package com.kendallshaw.dtdnormalizer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -26,11 +27,19 @@ public class DtdSerialization extends SerializationMixin
 
     private XMLLocator locator;
 
-    private boolean withComments = true;
+    private boolean withComments = false;
 
     private Stack<String> entityStack = new Stack<String>();
 
+    private boolean inExternalSubset = false;
+
+    private boolean includeAll = false;
+
     private boolean include = false;
+
+    private static final String WEIRD_SCHEME = "file:////";
+
+    private static int WEIRD_SCHEME_LENGTH = WEIRD_SCHEME.length();
 
     public DtdSerialization() throws Exception {
         final PrintWriter w = new PrintWriter(System.out);
@@ -51,6 +60,15 @@ public class DtdSerialization extends SerializationMixin
                 fos.close();
             throw e;
         }
+    }
+
+    public DtdSerialization(Writer w) throws Exception {
+        setSerializationWriter(w);
+    }
+
+    public DtdSerialization(OutputStream os, String encoding) throws Exception {
+        OutputStreamWriter osw = new OutputStreamWriter(os, encoding);
+        setSerializationWriter(osw);
     }
 
     @Override
@@ -114,7 +132,11 @@ public class DtdSerialization extends SerializationMixin
                                    String systemId)
         throws XNIException
     {
-        // ignored
+        inExternalSubset = false;
+        if (isWithComments()) {
+            locationComment(publicId, systemId);
+            out("<!-- DOCTYPE %s -->\n", root);
+        }
     }
 
     @Override
@@ -177,36 +199,49 @@ public class DtdSerialization extends SerializationMixin
 
     @Override
     public void startExternalSubset() throws XNIException {
-        // TODO: handle internal subset
+        inExternalSubset = true;
     }
 
     @Override
     public void endExternalSubset() throws XNIException {
-        // TODO: handle internal subset
+        inExternalSubset = false;
     }
-
+                                      
     @Override
     public void internalEntityDeclaration(String name, XMLString text,
-                                          XMLString rawText)
+                                          XMLString rawText,
+                                          boolean includeOverride)
         throws XNIException
     {
         boolean parameterEntity = name.startsWith("%");
-        final String entityName = parameterEntity ? "% "
-                                + name.substring(1) : name;
-        final String textString = text.toString();
-        final String rawString = rawText.toString();
+        String entityName = parameterEntity ? "% "
+                          + name.substring(1) : name;
+        String entityText = TextHandler.entityText(text, rawText);
         if (isWithComments())
             locationComment();
-        if (include && !parameterEntity) {
-            out(String.format("<!ENTITY %s \"%s\">\n", name, rawString.replaceAll("\"", "&#x22;")));
-        }
-        if (isWithComments()) {
-            locationComment();
+        if (!parameterEntity && (includeOverride || !inExternalSubset)) {
+            String normalized = normalizedText(entityText);
+            out(String.format("<!ENTITY %s \"%s\">\n",
+                              name, normalized.replaceAll("\"", "&#x22;")));
+        } else if (isWithComments()) {
+            final String textString = text.toString();
+            final String rawString = rawText.toString();
             out("<!-- ENTITY: %s", entityName);
-            if (textString.equals(rawString))
-                out(" [%s] -->\n", normalizedText(textString));
-            else
-                out("\n           [%s] -->\n", rawEntityText(rawString));
+            if (textString.equals(rawString)
+                && textString.length() == rawString.length())
+                out(" \"%s\" -->\n",
+                    normalizedText(textString).replaceAll("\"", "&#x22;"));
+            else if (textString.length() < 1)
+                out(" \"%s\" -->\n",
+                    normalizedText(rawString.replaceAll("\"", "&#x22;")));
+            else {
+                String cooked =
+                    rawEntityText(textString).replaceAll("\"", "&#x22;");
+                String raw =
+                    rawEntityText(rawString).replaceAll("\"", "&#x22;");
+                out(" \"%s\" -->\n<!--         [%s] -->\n",
+                    normalizedText(cooked), normalizedText(raw));
+            }
         }
     }
 
@@ -229,8 +264,23 @@ public class DtdSerialization extends SerializationMixin
     }
 
     @Override
-    public void startEntity(String name, boolean include) throws XNIException {
-        this.include = include;
+    public void unparsedEntityDeclaration(String name,
+                                          String publicId, String systemId,
+                                          String notation)
+        throws XNIException
+    {
+        if (isWithComments())
+            locationComment();
+        out("<!ENTITY %s", name);
+        if (publicId == null)
+            out(" SYSTEM \"%s\"", systemId.trim());
+        else
+            out(" PUBLIC \"%s\" \"%s\"", publicId.trim(), systemId.trim());
+        out(" NDATA " + notation + ">\n");
+    }
+
+    @Override
+    public void startEntity(String name) throws XNIException {
         entityStack.push(name);
         if (isWithComments()) {
             locationComment();
@@ -239,8 +289,7 @@ public class DtdSerialization extends SerializationMixin
     }
 
     @Override
-    public void endEntity(boolean include) throws XNIException {
-        this.include = include;
+    public void endEntity() throws XNIException {
         if (isWithComments()) {
             locationComment();
             out("<!-- end of entity %s -->\n\n", entityStack.pop());
@@ -274,7 +323,8 @@ public class DtdSerialization extends SerializationMixin
     public void attributeDeclaration(String name, String type,
                                      String[] enumeration,
                                      String defaultType,
-                                     XMLString defaultValue)
+                                     XMLString defaultValue,
+                                     XMLString rawDefaultValue)
         throws XNIException
     {
         out("\n          %s", name);
@@ -289,7 +339,7 @@ public class DtdSerialization extends SerializationMixin
             else if (NMTOKENS == type) out(" %s", NMTOKENS);
         } else {
             if (NOTATION == type)
-                out(" %s", NOTATION);
+                out(" %s (", NOTATION);
             else
                 out(" (");
             boolean first = true;
@@ -306,10 +356,28 @@ public class DtdSerialization extends SerializationMixin
         if (defaultValue == null) {
             out(" %s", defaultType);
         } else {
+            String text = TextHandler.entityText(defaultValue, rawDefaultValue);
             if (FIXED == defaultType)
                 out(" %s", FIXED);
-            out(" \"%s\"", defaultValue.toString().replaceAll("\"", "'"));
+            out(" \"%s\"", text.replaceAll("\"", "&#22;"));
         }
+    }
+
+    @Override
+    public void notationDeclaration(String name,
+                                    String publicId, String systemId)
+        throws XNIException
+    {
+        if (isWithComments())
+            locationComment();
+        out("<!NOTATION %s", name);
+        if (publicId == null)
+            out(" SYSTEM \"%s\">\n", systemId);
+        else if (systemId == null)
+            out(" PUBLIC \"%s\">\n", publicId);
+        else
+            out(" PUBLIC \"%s\" \"%s\">\n", publicId, systemId);
+            
     }
 
     @Override
@@ -373,27 +441,6 @@ public class DtdSerialization extends SerializationMixin
         // ignored
     }
 
-    protected String rawEntityText(final String text) {
-        final StringBuilder splitText = new StringBuilder();
-        final Matcher m = EREX.matcher(text);
-        int end = 0;
-        int prev = 0;
-        while (m.find(end)) {
-            int start = m.start();
-            end = m.end();
-            final String prefix = text.substring(prev, start);
-            final String match = text.substring(start, end);
-            splitText.append(normalizedText(prefix));
-            if (start > prev)
-                splitText.append("\n            ");
-            splitText.append(normalizedText(match));
-            prev = end;
-        }
-        if (end > 0)
-            splitText.append(normalizedText(text.substring(end)));
-        return splitText.toString();
-    }
-
     protected void locationComment() throws XNIException {
         locationComment(null, null);
     }
@@ -409,7 +456,10 @@ public class DtdSerialization extends SerializationMixin
             if (systemId != null)
                 externalIdentifier(publicId, systemId);
             if (baseId != null)  {
-                out("<!-- %s", baseId);
+                String id = baseId;
+                if (baseId.startsWith(WEIRD_SCHEME))
+                    id = "file:/" + baseId.substring(WEIRD_SCHEME_LENGTH);
+                out("<!-- %s", id);
                 if(lineNumber < 0)
                     out(" -->\n");
                 else
@@ -438,5 +488,4 @@ public class DtdSerialization extends SerializationMixin
         }
         flush();
     }
-
 }

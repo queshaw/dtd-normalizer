@@ -9,11 +9,9 @@ public class ErrorHandler implements XMLErrorHandler {
 	private Serialization logger;
 
 	public ErrorHandler() {
-		super();
 	}
 
 	public ErrorHandler(final Serialization log) {
-		super();
 		setLogger(log);
 	}
 

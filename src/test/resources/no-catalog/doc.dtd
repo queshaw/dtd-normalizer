@@ -1,0 +1,6 @@
+<!ENTITY % block.elements PUBLIC "-//KS//ENTITIES Block Elements//EN" "block.ent">
+%block.elements;
+
+<!ENTITY % doc.model PUBLIC "-//KS//ENTITIES Document Element//EN" "doc-model.ent">
+%doc.model;
+

@@ -1,0 +1,14 @@
+<!ELEMENT root (one, content)>
+<!ELEMENT one (optional?, one-or-more+, zero-or-more*)>
+<!ELEMENT optional EMPTY>
+<!ELEMENT one-or-more EMPTY>
+<!ELEMENT zero-or-more EMPTY>
+<!ELEMENT content (inner-content, outter-content)>
+<!ELEMENT inner-content (optional-content, one-or-more-content, zero-or-more-content)>
+<!ELEMENT outter-content (outter.optional-content, outter.one-or-more-content, outter.zero-or-more-content)>
+<!ELEMENT optional-content (optional?)>
+<!ELEMENT one-or-more-content (optional+)>
+<!ELEMENT zero-or-more-content (optional*)>
+<!ELEMENT outter.optional-content (optional)?>
+<!ELEMENT outter.one-or-more-content (optional)+>
+<!ELEMENT outter.zero-or-more-content (optional)*>

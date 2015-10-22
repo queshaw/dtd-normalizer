@@ -1,0 +1,8 @@
+<!ENTITY % title.element 'title'>
+<!ENTITY % p.element 'p'>
+
+<!ENTITY % title.content '(#PCDATA)'>
+<!ENTITY % p.content '(#PCDATA)'>
+
+<!ELEMENT %title.element; %title.content;>
+<!ELEMENT %p.element; %p.content;>

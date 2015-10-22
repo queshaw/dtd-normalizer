@@ -1,0 +1,7 @@
+<!ENTITY one '1'>
+<!ENTITY two '2'>
+<!ENTITY % ten '10'>
+<!ENTITY hundred '%ten;0'>
+
+<!ENTITY % roman PUBLIC "-//KS//ENTITIES Roman Numerals//EN" "roman.ent">
+%roman;

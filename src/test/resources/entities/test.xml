@@ -1,2 +1,5 @@
-<!DOCTYPE test PUBLIC "-//KS//DTD Test//EN" "asdf">
-<test>&other;</test>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE test PUBLIC "-//KS//DTD Test//EN" "asdf" [
+<!ENTITY snook 'SNOOK'>
+]>
+<test>&other;&snook;</test>

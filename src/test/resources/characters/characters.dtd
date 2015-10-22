@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ENTITY right "￫">
+<!ENTITY right-hex "&#xFFEB;">
+<!ENTITY kana "𛀀">
+<!ENTITY kana-hex "&#x1B000;">
+<!ENTITY a "𐌀">
+<!ENTITY a-hex "&#x10300;">
+<!ENTITY bar "𝄀">
+<!ENTITY bar-hex "&#x1D100;">
+<!ENTITY coda "𝄌">
+<!ENTITY coda-hex "&#x1D10C;">
+<!ENTITY % first "right &right; hex &right-hex;">
+<!ENTITY % last "code &coda; hex &coda-hex;">
+<!ENTITY some "%first; and &a; and &a-hex; and %last;">
+
+<!ELEMENT doc (p+)>
+<!ELEMENT p (#PCDATA)>

@@ -97,11 +97,12 @@ public class XmlSerialization
         locator = loc;
     }
 
+    // TODO fix encoding
     @Override
     public void resetTargetResource(URI uri)
         throws IOException, XMLStreamException
     {
-        if (!beforeOpen) {
+    	if (!beforeOpen) {
             flush();
             OutputStream os = null;
             OutputStreamWriter osw = null;
@@ -117,7 +118,7 @@ public class XmlSerialization
                     setXmlWriter(of.createXMLStreamWriter(osw));
                 } catch (MalformedURLException e) {
                     if (os != null)
-                        os.close();
+                        os.close(); // Not dead code
                     throw new RuntimeException(e);
                 } catch (FactoryConfigurationError e) {
                     if (os != null)
@@ -127,13 +128,13 @@ public class XmlSerialization
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
+    	}
     }
 
     @Override
     public void startDocument(final String root) throws XNIException {
         try {
-            beforeOpen = false;
+        	beforeOpen = false;
             final XMLStreamWriter w = getXmlWriter();
             w.writeStartDocument();
             w.writeStartElement(root);
@@ -245,8 +246,10 @@ public class XmlSerialization
     }
 
     @Override
-    public void internalEntityDeclaration(final String name, final XMLString text,
-                                          final XMLString rawText)
+    public void internalEntityDeclaration(final String name,
+                                          final XMLString text,
+                                          final XMLString rawText,
+                                          boolean unused)
         throws XNIException
     {
         final boolean parameterEntity = name.startsWith("%");
@@ -273,7 +276,7 @@ public class XmlSerialization
                                                entityReference);
                     entityReference = null;
                     inEntityReference = false;
-                } else if ("%".equals(t) || "&#".equals(t)) {
+                } else if ("%".equals(t) || "&#".equals(t) || "&".equals(t)) {
                     inEntityReference = true;
                 } else if (inEntityReference) {
                     entityReference = t;
@@ -309,7 +312,26 @@ public class XmlSerialization
     }
 
     @Override
-    public void startEntity(String name, boolean include)
+    public void unparsedEntityDeclaration(String name,
+                                          String publicId, String systemId,
+                                          String notation)
+        throws XNIException
+    {
+        final XMLStreamWriter w = getXmlWriter();
+        try {
+            w.writeStartElement("unparsed-entity-declaration");
+            w.writeAttribute("name", name);
+            w.writeAttribute("ndata", notation);
+            locationElement(publicId, systemId);
+            w.writeEndElement();
+        } catch (XMLStreamException e) {
+            throw new XNIException(e);
+        }
+        
+    }
+
+    @Override
+    public void startEntity(String name)
         throws XNIException
     {
         startElement("entity");
@@ -318,7 +340,7 @@ public class XmlSerialization
     }
 
     @Override
-    public void endEntity(boolean include)
+    public void endEntity()
         throws XNIException
     {
         endElement();
@@ -328,7 +350,7 @@ public class XmlSerialization
     public void elementDeclaration(String name, String contentModel)
         throws XNIException
     {
-        startElement("element-declaration");
+    	startElement("element-declaration");
         attribute("name", name);
         locationElement();
         element("content-model", contentModel);
@@ -349,7 +371,8 @@ public class XmlSerialization
     @Override
     public void attributeDeclaration(String name, String type,
                                      String[] enumeration, String defaultType,
-                                     XMLString defaultValue)
+                                     XMLString defaultValue,
+                                     XMLString rawDefaultValue)
             throws XNIException
     {
         final String value =
@@ -362,11 +385,32 @@ public class XmlSerialization
     }
 
     @Override
+    public void notationDeclaration(String name,
+                                    String publicId, String systemId)
+        throws XNIException
+    {
+    	startElement("notation");
+        attribute("name", name);
+        locationElement(publicId, systemId);
+        endElement();
+        
+    }
+
+    @Override
     public void redefinition(String entityName) throws XNIException {
         startElement("redefinition");
         attribute("name", entityName);
         locationElement();
         endElement();
+    }
+
+    public void startCdata(String text) throws XNIException {
+        try {
+            XMLStreamWriter w = getXmlWriter();
+            w.writeCData(text);
+        } catch (XMLStreamException e) {
+            throw new XNIException(e);
+        }
     }
 
     public void startElement(final String name) throws XNIException {
@@ -550,6 +594,20 @@ public class XmlSerialization
         } catch (XMLStreamException e) {
             throw new XNIException(e);
         }
+    }
+
+    private String writeProcessingInstructionText(final String target,
+                                              final String data)
+        throws XNIException
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?");
+        if (data == null || "".equals(data))
+            sb.append(target);
+        else
+            sb.append(target + " " + data);
+        sb.append("?>");
+        return sb.toString();
     }
 
     protected void externalIdentifier(final String p, final String s)

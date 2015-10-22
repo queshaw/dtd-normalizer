@@ -1,0 +1,2 @@
+<!ELEMENT root (#PCDATA|p)*>
+<!ELEMENT p (#PCDATA)>

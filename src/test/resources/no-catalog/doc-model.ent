@@ -1,0 +1,9 @@
+<!ENTITY % doc.element 'doc'>
+<!ENTITY % doc.content '(%title.element;, (%p.element;)+)'>
+
+<!ENTITY % doc.attlist
+    'id ID #REQUIRED'>
+
+<!ELEMENT %doc.element; %doc.content;>
+<!ATTLIST %doc.element;
+          %doc.attlist;>

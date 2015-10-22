@@ -1,0 +1,9 @@
+<!DOCTYPE doc [
+<!ELEMENT doc (title, p+)>
+<!ELEMENT title (#PCDATA)>
+<!ELEMENT p (#PCDATA)>
+]>
+<doc>
+  <title>title</title>
+  <p>Paragraph.</p>
+</doc>

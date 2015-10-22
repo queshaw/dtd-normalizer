@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- -*-mode: nxml -*- -->
+<!DOCTYPE doc SYSTEM "characters.dtd" [
+]>
+<doc>
+  <p/>
+  <!--
+<p>&kana-hex;: &kana;</p>
+<p>&a-hex;: &a;</p>
+<p>&bar-hex;: &bar;</p>
+<p>&code-hex;: &coda;</p>
+<p>&some;</p>
+-->
+</doc>

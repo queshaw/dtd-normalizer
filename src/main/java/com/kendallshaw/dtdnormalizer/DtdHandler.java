@@ -1,13 +1,5 @@
 package com.kendallshaw.dtdnormalizer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
@@ -21,10 +13,11 @@ import org.apache.xerces.xni.XMLLocator;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.parser.XMLDTDContentModelSource;
-import org.apache.xerces.xni.parser.XMLDTDSource;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
+public class DtdHandler extends XniConfigurationSources
+                        implements XMLDTDHandler, XMLDTDContentModelHandler
+{
 
     private XniConfiguration configuration = new XniConfiguration();
 
@@ -32,48 +25,18 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     private static enum EntityType {INTERNAL, EXTERNAL};
 
-    private Map<String, EntityType> entityNames =
-            new Hashtable<String, EntityType>();
+    private Map<String, EntityType> entityDecls =
+        new Hashtable<String, EntityType>();
 
-    private Set<String> inclusionPublicIds =
-        new HashSet<String>();
+    private Set<String> inclusionEntityNames = new HashSet<String>();
 
-    private int inclusionDepth = 0;
-
-    private Set<String> inclusionEntityNames =
-            new HashSet<String>();
+    private boolean includeAll = false;
 
     private Stack<String> entityStack = new Stack<String>();
 
     private XMLLocator locator;
 
     private String currentEntity = null;
-
-    private XMLDTDSource dtdSource = new XMLDTDSource() {
-
-        @Override
-        public XMLDTDHandler getDTDHandler() {
-            return configuration.getDTDHandler();
-        }
-
-        @Override
-        public void setDTDHandler(XMLDTDHandler h) {
-            configuration.setDTDHandler(h);
-        }
-    };
-
-    private XMLDTDContentModelSource cmSource = new XMLDTDContentModelSource() {
-
-        @Override
-        public XMLDTDContentModelHandler getDTDContentModelHandler() {
-            return configuration.getDTDContentModelHandler();
-        }
-
-        @Override
-        public void setDTDContentModelHandler(XMLDTDContentModelHandler h) {
-            configuration.setDTDContentModelHandler(h);
-        }
-    };
 
     public DtdHandler() throws Exception {
     }
@@ -83,13 +46,15 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
     {
         setSerializer(log);
         setConfiguration(cfg);
+        includeAll = cfg.isIncludingAll();
+        inclusionEntityNames = cfg.getInclusionEntityNames();
     }
 
-    protected XMLLocator getLocator() {
+    public XMLLocator getLocator() {
         return locator;
     }
 
-    protected void setLocator(XMLLocator l) {
+    public void setLocator(XMLLocator l) {
         locator = l;
     }
 
@@ -109,21 +74,12 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         this.serializer = logger;
     }
 
-    public Set<String> inclusionPublicIds() {
-        return inclusionPublicIds;
-    }
-
     // XMLDTDHandler protocol
 
     @Override
-    public XMLDTDSource getDTDSource() { return dtdSource; }
-
-    @Override
-    public void setDTDSource(XMLDTDSource source) { dtdSource = source; }
-
-    @Override
     public void startDTD(XMLLocator locator, Augmentations augmentations)
-            throws XNIException {
+        throws XNIException
+    {
         setLocator(locator);
         getSerializer().setLocator(locator);
         entityStack.push("DTD");
@@ -147,7 +103,7 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
     public void startConditional(final short type, final Augmentations unused)
         throws XNIException
     {
-        final String cond = type == CONDITIONAL_IGNORE ? "ignore" : "include";
+        final String cond = type == CONDITIONAL_IGNORE ? "IGNORE" : "INCLUDE";
         getSerializer().startConditionalSection(cond);
     }
 
@@ -173,12 +129,24 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         throws XNIException
     {
         final Serialization s = getSerializer();
-        final String suffix = name.replaceFirst("% *", "");
-        if (entityNames.containsKey(name)) {
+        //if ("".equals(text.toString()) || "afr".equals(name)) {
+        /*
+            String textString = text.toString();
+            String rawString = rawText.toString();
+            System.out.println("== " + name + " ========================");
+            System.out.println("text[" + textString.length() + "](" + textString + ")");
+            System.out.println("raw[" + rawString.length() + "](" + rawString + ")");
+            System.out.println("== " + name + " ========================");
+            System.out.println("here");
+        */
+        //}
+        if (entityDecls.containsKey(name)) {
             s.redefinition(name);
         } else {
-            entityNames.put(name, EntityType.INTERNAL);
-            s.internalEntityDeclaration(suffix, text, rawText);
+            entityDecls.put(name, EntityType.INTERNAL);
+            boolean include = inclusionEntityNames.contains(name);
+            s.internalEntityDeclaration(name, text, rawText,
+                                        include || includeAll);
         }
     }
 
@@ -189,28 +157,28 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         throws XNIException
     {
         final Serialization s = getSerializer();
-        final String suffix = name.replaceFirst("% *", "");
-        if (entityNames.containsKey(name)) {
+        if (entityDecls.containsKey(name)) {
             s.redefinition(name);
         } else {
-            entityNames.put(name, EntityType.EXTERNAL);
-            final String systemId = id.getLiteralSystemId();
-            final String publicId = id.getPublicId();
-            if (inclusionPublicIds().contains(publicId))
-                inclusionEntityNames.add(name);
-            getSerializer().externalEntityDeclaration(suffix, publicId, systemId);
+            entityDecls.put(name, EntityType.EXTERNAL);
+            s.externalEntityDeclaration(name,
+                                        id.getLiteralSystemId(),
+                                        id.getLiteralSystemId());
         }
     }
 
     @Override
     public void startExternalSubset(XMLResourceIdentifier id,
-            Augmentations augmentations) throws XNIException {
+                                    Augmentations augmentations)
+        throws XNIException
+    {
         getSerializer().startExternalSubset();
     }
 
     @Override
     public void endExternalSubset(Augmentations augmentations)
-            throws XNIException {
+        throws XNIException
+    {
         getSerializer().endExternalSubset();
     }
 
@@ -221,10 +189,8 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
                                      Augmentations augmentations)
         throws XNIException
     {
-        if (EntityType.EXTERNAL == entityNames.get(name)) {
-            if (inclusionEntityNames.contains(name))
-                ++inclusionDepth;
-            getSerializer().startEntity(name, inclusionDepth > 0);
+        if (EntityType.EXTERNAL == entityDecls.get(name)) {
+            getSerializer().startEntity(name);
             entityStack.push(name);
         }
     }
@@ -232,17 +198,17 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
     @Override
     public void endParameterEntity(String name, Augmentations augmentations)
             throws XNIException {
-        if (EntityType.EXTERNAL == entityNames.get(name)) {
-            if (inclusionEntityNames.contains(name))
-                --inclusionDepth;
-            getSerializer().endEntity(inclusionDepth > 0);
+        if (EntityType.EXTERNAL == entityDecls.get(name)) {
+            getSerializer().endEntity();
             entityStack.pop();
         }
     }
 
     @Override
     public void elementDecl(String name, String contentModel,
-            Augmentations augmentations) throws XNIException {
+            Augmentations augmentations)
+        throws XNIException
+    {
         getSerializer().elementDeclaration(name, contentModel);
     }
 
@@ -269,8 +235,9 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         throws XNIException
     {
         getSerializer().attributeDeclaration(attributeName, type,
-                                         enumeration, defaultType,
-                                         defaultValue);
+                                             enumeration, defaultType,
+                                             defaultValue,
+                                             rawDefaultValue);
     }
 
     @Override
@@ -281,31 +248,34 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
 
     @Override
     public void unparsedEntityDecl(String name,
-            XMLResourceIdentifier identifier, String notation,
-            Augmentations augmentations) throws XNIException {
+            XMLResourceIdentifier id, String notation,
+            Augmentations augmentations)
+        throws XNIException
+    {
+        final String systemId = id.getLiteralSystemId();
+        final String publicId = id.getPublicId();
+        getSerializer().unparsedEntityDeclaration(name, 
+                                                  publicId, systemId,
+                                                  notation);
     }
 
     @Override
-    public void notationDecl(String name, XMLResourceIdentifier identifier,
-            Augmentations augmentations) throws XNIException {
+    public void notationDecl(String name, XMLResourceIdentifier id,
+            Augmentations augmentations)
+        throws XNIException
+    {
+        final String systemId = id.getLiteralSystemId();
+        final String publicId = id.getPublicId();
+        getSerializer().notationDeclaration(name, publicId, systemId);
     }
 
     @Override
     public void ignoredCharacters(XMLString text, Augmentations augmentations)
-            throws XNIException {
+        throws XNIException
+    {
     }
 
     // XMLDTDContentModelHandler protocol
-
-    @Override
-    public XMLDTDContentModelSource getDTDContentModelSource() {
-        return cmSource;
-    }
-
-    @Override
-    public void setDTDContentModelSource(XMLDTDContentModelSource source) {
-        cmSource = source;
-    }
 
     @Override
     public void startContentModel(String elementName,
@@ -405,18 +375,12 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
             final String base = loc.getBaseSystemId();
             if (base == null) {
                 currentEntity = base;
-                //l.rule();
                 s.comment(" Base: %s " , loc.getBaseSystemId());
                 s.comment(" Resolved: %s " , loc.getExpandedSystemId());
                 s.comment(" System ID: %s " , loc.getLiteralSystemId());
-                //l.rule();
-                //l.outln("");
             } else if (!base.equals(currentEntity)) {
                 currentEntity = base;
-                //l.rule();
                 s.comment(" %s " , loc.getBaseSystemId());
-                //l.rule();
-                //l.outln("");
             }
             s.comment(" Line %s %s ",
                       loc.getLineNumber(), loc.getBaseSystemId());
@@ -438,6 +402,5 @@ public class DtdHandler implements XMLDTDHandler, XMLDTDContentModelHandler {
         sb.append("] ");
         final Serialization s = getSerializer();
         s.comment(sb.toString());
-        //l.outln("");
     }
 }

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 
 import org.apache.xerces.xni.XNIException;
 
-public class SerializationMixin {
+public class SerializationMixin implements Patterns {
 
     protected final static Pattern EREX = Pattern.compile("(%|&#)([^\\s;]+);");
 
@@ -65,9 +65,11 @@ public class SerializationMixin {
 
     public List<String> entityText(final String text) {
         final List<String> strings = new ArrayList<String>();
-        final Matcher m = EREX.matcher(text);
+        final Matcher m = E_REX.matcher(text);
         int end = 0;
         int prev = 0;
+        if (text.contains("&right"))
+            System.out.println("");
         while (m.find(end)) {
             int start = m.start();
             end = m.end();
@@ -77,8 +79,31 @@ public class SerializationMixin {
             strings.add(";");
             prev = end;
         }
-        if (end > 0)
+        if (end < 1)
+            strings.add(text);
+        else
             strings.add(normalizedText(text.substring(end)));
         return strings;
+    }
+
+    public String rawEntityText(final String text) {
+        final StringBuilder splitText = new StringBuilder();
+        final Matcher m = E_REX.matcher(text);
+        int end = 0;
+        int prev = 0;
+        while (m.find(end)) {
+            int start = m.start();
+            end = m.end();
+            final String prefix = text.substring(prev, start);
+            final String match = text.substring(start, end);
+            splitText.append(normalizedText(prefix));
+            if (start > prev)
+                splitText.append("\n            ");
+            splitText.append(normalizedText(match));
+            prev = end;
+        }
+        if (end < 1)
+            return text;
+        return splitText.append(normalizedText(text.substring(end))).toString();
     }
 }

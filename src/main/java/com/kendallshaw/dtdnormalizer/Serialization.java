@@ -50,17 +50,24 @@ public interface Serialization {
         throws XNIException;
 
     void internalEntityDeclaration(String name,
-                                   XMLString text, XMLString rawText)
+                                   XMLString text, XMLString rawText,
+                                   boolean includeOverride)
         throws XNIException;
 
     void externalEntityDeclaration(String name,
                                    String publicId, String systemId)
         throws XNIException;
 
-    void startEntity(String name, boolean include)
+
+    void unparsedEntityDeclaration(String name,
+                                   String publicId, String systemId,
+                                   String notation)
         throws XNIException;
 
-    void endEntity(boolean include)
+    void startEntity(String name)
+        throws XNIException;
+
+    void endEntity()
         throws XNIException;
 
     void elementDeclaration(String name, String contentModel)
@@ -74,7 +81,11 @@ public interface Serialization {
 
     void attributeDeclaration(String name, String type,
                               String[] enumeration, String defaultType,
-                              XMLString defaultValue)
+                              XMLString defaultValue,
+                              XMLString rawDefaultValue)
+        throws XNIException;
+
+    void notationDeclaration(String name, String publicId, String systemId)
         throws XNIException;
 
     void redefinition(String entityName) throws XNIException;

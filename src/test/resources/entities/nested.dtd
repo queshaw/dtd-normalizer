@@ -1,0 +1,7 @@
+<!ENTITY % characters PUBLIC "-//KS//ENTITIES Characters//EN" "/dev/null">
+%characters;
+
+<!ENTITY % extra PUBLIC "-//KS//ENTITIES Extra//EN" "/dev/null">
+%extra;
+
+<!ELEMENT test (#PCDATA)>

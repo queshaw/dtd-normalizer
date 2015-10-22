@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ENTITY afr              "&#x1D51E;" ><!--MATHEMATICAL FRAKTUR SMALL A -->
+<!ENTITY Afr              "&#x1D504;" ><!--MATHEMATICAL FRAKTUR CAPITAL A -->
+<!ENTITY fraktur-z        '𝖟'>
+<!ENTITY double-quote '"'>

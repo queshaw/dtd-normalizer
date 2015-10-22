@@ -1,3 +1,8 @@
+<!ENTITY % unicode PUBLIC "-//KS//ENTITIES Unicode//EN" "invalid">
+%unicode;
+<!ENTITY % other PUBLIC "-//KS//ENTITIES Other//EN" "urn:ks:entities:other">
+%other;
+
 <!ENTITY bork 'bork'>
 <!ENTITY text 'Abc &amp; (&#x1D35;) 123 &bork; xyz &#x1D35;'>
 <!ENTITY asdf "'">
@@ -5,5 +10,5 @@
 
 <!ELEMENT test (#PCDATA)>
 <!ATTLIST test
-          a CDATA #FIXED '"asdf&#x22;&#x27;'>
+          a CDATA #FIXED "&gcirc;">
 

@@ -1,5 +1,8 @@
 package com.kendallshaw.dtdnormalizer;
 
+import java.io.IOException;
+import java.util.Map;
+
 import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.NamespaceContext;
 import org.apache.xerces.xni.QName;
@@ -10,46 +13,38 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
-public class DocumentHandler implements XMLDocumentHandler {
-
-    private XniConfiguration configuration;
-
+public class DocumentHandler extends XniConfigurationSources
+                             implements XMLDocumentHandler
+{
     private Serialization serializer;
 
-    private XMLDocumentSource source = new XMLDocumentSource() {
-
-        @Override
-        public void setDocumentHandler(XMLDocumentHandler h) {
-            getConfiguration().setDocumentHandler(h);
-        }
-
-        @Override
-        public XMLDocumentHandler getDocumentHandler() {
-            return getConfiguration().getDocumentHandler();
-        }
-    };
+    private XMLDocumentSource documentSource = this;
 
     private boolean inExternalSubset = false;
 
-    public DocumentHandler() {}
+    private String baseSystemId = null;
 
-    public DocumentHandler(final Serialization log, final XniConfiguration cfg) {
+    public DocumentHandler() {
+        super();
+    }
+
+    public DocumentHandler(final Serialization log, final XniConfiguration cfg)
+    {
+        super(cfg);
         setConfiguration(cfg);
         setSerializer(log);
     }
 
-    public XniConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(final XniConfiguration c) {
-        configuration = c;
+    @Override
+    public XMLDocumentSource getDocumentSource() {
+        return documentSource;
     }
 
     @Override
-    public void setDocumentSource(final XMLDocumentSource s) {
-        source = s;
+    public void setDocumentSource(XMLDocumentSource documentSource) {
+        this.documentSource = documentSource;
     }
 
     public Serialization getSerializer() {
@@ -60,17 +55,20 @@ public class DocumentHandler implements XMLDocumentHandler {
         serializer = s;
     }
 
-    @Override
-    public XMLDocumentSource getDocumentSource() {
-        return source;
-    }
-
     protected boolean isInExternalSubset() {
         return inExternalSubset;
     }
 
     protected void setInExternalSubset(final boolean f) {
         inExternalSubset = f;
+    }
+
+    public String getBaseSystemId() {
+        return baseSystemId;
+    }
+
+    public void setBaseSystemId(String baseSystemId) {
+        this.baseSystemId = baseSystemId;
     }
 
     @Override
@@ -116,6 +114,30 @@ public class DocumentHandler implements XMLDocumentHandler {
                             final String systemId, final Augmentations unused)
         throws XNIException
     {
+
+        Map<String, String> inclusionIds = null;
+        XMLParserConfiguration cfg = getConfiguration();
+        boolean include = false;
+        if (XniConfiguration.class.isAssignableFrom(cfg.getClass())) {
+            XniConfiguration config = (XniConfiguration) cfg;
+            inclusionIds = config.getInclusionIds();
+            final String mappedSystem =
+                systemId == null ? null : inclusionIds.get(systemId);
+            final String mappedPublic =
+                publicId == null ? null : inclusionIds.get(publicId);
+            include = mappedSystem != null || mappedPublic != null;
+            config.setIncludingAll(config.isIncludingAll() || include);
+            if (include)
+                config.setIncludingAll(true);
+            else if (!config.isIncludingAll()) {
+                PreParser pp = new PreParser(config);
+                try {
+                    pp.parse(publicId, systemId, getBaseSystemId());
+                } catch (IOException e) {
+                    throw new XNIException(e);
+                }
+            }
+        }
         getSerializer().doctypeDeclaration(rootElement, publicId, systemId);
     }
 

@@ -2,4 +2,5 @@
          prefer="public">
 
   <public publicId="-//KS//DTD Test//EN" uri="test.dtd"/>
+  <public publicId="-//KS//DTD Nested//EN" uri="nested.dtd"/>
 </catalog>
