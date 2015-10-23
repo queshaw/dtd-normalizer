@@ -114,22 +114,25 @@ public class DocumentHandler extends XniConfigurationSources
                             final String systemId, final Augmentations unused)
         throws XNIException
     {
-
         Map<String, String> inclusionIds = null;
         XMLParserConfiguration cfg = getConfiguration();
         boolean include = false;
+        boolean includingAll = false;
         if (XniConfiguration.class.isAssignableFrom(cfg.getClass())) {
             XniConfiguration config = (XniConfiguration) cfg;
             inclusionIds = config.getInclusionIds();
+            includingAll = config.isIncludingAll();
             final String mappedSystem =
                 systemId == null ? null : inclusionIds.get(systemId);
             final String mappedPublic =
                 publicId == null ? null : inclusionIds.get(publicId);
             include = mappedSystem != null || mappedPublic != null;
-            config.setIncludingAll(config.isIncludingAll() || include);
-            if (include)
+            config.setIncludingAll(includingAll || include);
+            if (include) {
+                includingAll = true;
                 config.setIncludingAll(true);
-            else if (!config.isIncludingAll()) {
+            }
+            else if (!includingAll) {
                 PreParser pp = new PreParser(config);
                 try {
                     pp.parse(publicId, systemId, getBaseSystemId());
@@ -138,6 +141,8 @@ public class DocumentHandler extends XniConfigurationSources
                 }
             }
         }
+        Serialization ser = getSerializer();
+        ser.setIncludingAll(include || includingAll);
         getSerializer().doctypeDeclaration(rootElement, publicId, systemId);
     }
 

@@ -33,7 +33,7 @@ public class DtdSerialization extends SerializationMixin
 
     private boolean inExternalSubset = false;
 
-    private boolean includeAll = false;
+    private boolean includingAll = false;
 
     private boolean include = false;
 
@@ -100,12 +100,22 @@ public class DtdSerialization extends SerializationMixin
     }
 
     @Override
+    public boolean isIncludingAll() {
+        return includingAll;
+    }
+
+    @Override
+    public void setIncludingAll(boolean includingAll) {
+        this.includingAll = includingAll;
+    }
+
+    @Override
     public void resetTargetResource(URI uri) throws Exception {
     }
 
     @Override
     public void startDocument(String root) throws XNIException {
-        // ignored
+        // ignore
     }
 
     @Override
@@ -219,7 +229,9 @@ public class DtdSerialization extends SerializationMixin
         String entityText = TextHandler.entityText(text, rawText);
         if (isWithComments())
             locationComment();
-        if (!parameterEntity && (includeOverride || !inExternalSubset)) {
+        if (!parameterEntity
+            && (isIncludingAll() || includeOverride || !inExternalSubset))
+        {
             String normalized = normalizedText(entityText);
             out(String.format("<!ENTITY %s \"%s\">\n",
                               name, normalized.replaceAll("\"", "&#x22;")));

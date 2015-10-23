@@ -13,19 +13,14 @@ public class DtdNormalizer {
 
     private IdentifierResolver identifierResolver;
 
-    private EntityResolver entityResolver;
-
     private ErrorHandler errorHandler;
 
     private InputSource input;
 
     private OutputIdentifier output;
 
-    private Map<String, String> inclusionEntities = null;
-
     public DtdNormalizer(XniConfiguration configuration) {
         this.configuration = configuration;
-        inclusionEntities = configuration.getInclusionIds();
     }
 
     public Serialization getSerialization() {

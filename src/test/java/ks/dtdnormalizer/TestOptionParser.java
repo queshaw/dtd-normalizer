@@ -19,7 +19,7 @@ public class TestOptionParser {
     public static void main(String[] args) throws Exception {
         OptionParser op = new OptionParser();
         op.parseCommandLine(new String[] {
-                "--entities", "--",
+                "--help", "--",
                 "src/test/resources/simple.xml"
         });
         System.out.println("entities=" + op.getEntitiesPath());

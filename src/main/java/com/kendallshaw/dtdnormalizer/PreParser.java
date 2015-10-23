@@ -17,8 +17,8 @@ import org.apache.xerces.xni.Augmentations;
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
-import org.apache.xerces.xni.grammars.Grammar;
 import org.apache.xerces.xni.grammars.XMLGrammarDescription;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
 
@@ -90,8 +90,12 @@ public class PreParser extends XMLDTDLoader implements Patterns {
         XMLResourceIdentifierImpl rid =
             new XMLResourceIdentifierImpl(publicId, systemId, baseSystemId,
                                           systemId);
-        XMLInputSource is =
-                configuration.getEntityResolver().resolveEntity(rid);
+        XMLEntityResolver res = getConfiguration().getEntityResolver();
+        XMLInputSource is = null;
+        if (res == null)
+            is = new XMLInputSource(rid);
+        else
+            is = res.resolveEntity(rid);
         setEntityResolver(configuration.getEntityResolver());
         setErrorHandler(configuration.getErrorHandler());
         SymbolTable sym = new SymbolTable(BIG_PRIME);
@@ -103,27 +107,7 @@ public class PreParser extends XMLDTDLoader implements Patterns {
         preparser.setProperty(GRAMMAR_POOL, grammarPool);
         preparser.setFeature(NAMESPACES_FEATURE, true);
         preparser.setFeature(VALIDATION_FEATURE, true);
-        Grammar grammar =
-            preparser.preparseGrammar(XMLGrammarDescription.XML_DTD, is);
-        /*
-        for (String s : inclusionEntityNames)
-            System.out.println(s);
-        */
-        /*
-        DTDGrammar g = (DTDGrammar) grammar;
-        XMLEntityDecl edecl = new XMLEntityDecl();
-        int i = 0;
-        while (g.getEntityDecl(i++, edecl)) {
-            System.out.println("baseSystemId: " + edecl.baseSystemId);
-            System.out.println("name: " + edecl.name);
-            System.out.println("notation: " + edecl.notation);
-            System.out.println("publicId: " + edecl.publicId);
-            System.out.println("systemId: " + edecl.systemId);
-            System.out.println("value: " + edecl.value);
-            System.out.println("inExternal: " + edecl.inExternal);
-            System.out.println("isPE: " + edecl.isPE + "\n");
-        }
-        */
+        preparser.preparseGrammar(XMLGrammarDescription.XML_DTD, is);
     }
 
     @Override
@@ -137,7 +121,6 @@ public class PreParser extends XMLDTDLoader implements Patterns {
             entityDeclNames.add(name);
             final String systemId = id.getLiteralSystemId();
             final String publicId = id.getPublicId();
-            Map<String, String> inclusionEntities = null;
             final String mappedSystem =
                 systemId == null ? null : getInclusionIds().get(systemId);
             final String mappedPublic =

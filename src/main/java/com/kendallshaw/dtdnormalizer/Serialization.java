@@ -13,6 +13,10 @@ public interface Serialization {
 
     void setLocator(XMLLocator loc);
 
+    boolean isIncludingAll();
+
+    void setIncludingAll(boolean f);
+
     void resetTargetResource(URI uri) throws Exception;
 
     Writer getSerializationWriter();

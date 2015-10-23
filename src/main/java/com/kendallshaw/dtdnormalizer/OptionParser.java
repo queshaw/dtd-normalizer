@@ -25,6 +25,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import com.ibm.icu.charset.CharsetICU;
+
 public class OptionParser {
 
     @SuppressWarnings("serial")
@@ -43,12 +45,6 @@ public class OptionParser {
 
     public static final String CHARSET_PROPERTY =
         "dtd-normalizer.charset";
-
-    public static final String INPUT_CHARSET_PROPERTY =
-        "dtd-normalizer.charset.input";
-
-    public static final String OUTPUT_CHARSET_PROPERTY =
-        "dtd-normalizer.charset.output";
 
     private static final String CMD_LINE = CommandLine.class.getName()
         + "\n       [options] [--] input-file [output-file]";
@@ -75,20 +71,14 @@ public class OptionParser {
                       + " syntax output.", SERIALIZATION_PROPERTY);
 
     private static final String CHARSET_DESC =
-        String.format("(-D%s) default: UTF-8. Specifies the charset for reading"
-                      + " and writing.", CHARSET_PROPERTY);
-
-    private static final String INPUT_CHARSET_DESC =
-        String.format("(-D%s) default: UTF-8. Specifies the charset to decode"
-                      + " for input.", INPUT_CHARSET_PROPERTY);
-
-    private static final String OUTPUT_CHARSET_DESC =
         String.format("(-D%s) default: UTF-8. Specifies the charset for"
-                      + " encoding output.", INPUT_CHARSET_PROPERTY);
+                      + " encoding output.", CHARSET_PROPERTY);
 
     private static final String LIST_CHARSETS_DESC =
-        String.format("Lists the charsets supported for encoding and"
-                      + " decoding prior to XML parsing and serialization.");
+        String.format("Lists the charsets supported for encoding output.");
+
+    private static final String LIST_ENCODINGS_DESC =
+        String.format("Lists the encodings detected in external entities.");
 
     private static final String COMMENTS_DESC =
         String.format("(-D%s) true/yes/false/no default: false. Specifies"
@@ -112,19 +102,17 @@ public class OptionParser {
 
     private static final String SERIALIZATION_OPT = "s";
 
+    private static final String CHARSET_LONGOPT = "charset";
+
+    private static final String LIST_CHARSETS_LONGOPT = "charsets";
+
+    private static final String LIST_ENCODINGS_LONGOPT = "encodings";
+
     private static final String COMMENTS_OPT = "c";
 
     private static final String ENTITIES_OPT = "e";
 
     private static final String HELP_OPT = "h";
-
-    private static final String LIST_CHARSETS_LONGOPT = "charsets";
-
-    private static final String CHARSET_LONGOPT = "charset";
-
-    private static final String DECODING_LONGOPT = "decode";
-
-    private static final String ENCODING_LONGOPT = "encode";
 
     private static final String STACKTRACE_LONGOPT = "stacktrace";
 
@@ -134,20 +122,20 @@ public class OptionParser {
 
     private String catalogList = null;
 
-    private Map<String, String> inclusionIds =
-        new Hashtable<String, String>();
+    private String serialization = null;
 
-    private String entitiesPath = null;
+    private Charset charset = null;
 
-    private boolean includingAll = false;
+    private boolean reportingEncodings = false;
 
     private boolean withComments = false;
 
-    private String serialization = null;
+    private String entitiesPath = null;
 
-    private Charset encoding = null;
+    private Map<String, String> inclusionIds =
+        new Hashtable<String, String>();
 
-    private Charset decoding = null;
+    private boolean includingAll = false;
 
     private boolean withStacktrace = false;
 
@@ -183,20 +171,28 @@ public class OptionParser {
         this.catalogList = catalogList;
     }
 
-    public String getEntitiesPath() {
-        return entitiesPath;
+    public String getSerialization() {
+        return serialization;
     }
 
-    public void setIncludingAll(boolean f) {
-        includingAll = f;
+    public void setSerialization(String serialization) {
+        this.serialization = serialization;
     }
 
-    public boolean isIncludingAll() {
-        return includingAll;
+    public Charset getCharset() {
+        return charset;
     }
 
-    public void setEntitiesPath(String entitiesPath) {
-        this.entitiesPath = entitiesPath;
+    public void setCharset(Charset charset) {
+        this.charset = charset;
+    }
+
+    public boolean isReportingEncodings() {
+        return reportingEncodings;
+    }
+
+    public void setReportingEncodings(boolean reportingEncodings) {
+        this.reportingEncodings = reportingEncodings;
     }
 
     public boolean isWithComments() {
@@ -207,32 +203,24 @@ public class OptionParser {
         this.withComments = withComments;
     }
 
-    public String getSerialization() {
-        return serialization;
+    public String getEntitiesPath() {
+        return entitiesPath;
     }
 
-    public void setSerialization(String serialization) {
-        this.serialization = serialization;
+    public void setEntitiesPath(String entitiesPath) {
+        this.entitiesPath = entitiesPath;
+    }
+
+    public void setIncludingAll(boolean f) {
+        includingAll = f;
+    }
+
+    public boolean isIncludingAll() {
+        return includingAll;
     }
 
     public Map<String, String> inclusionIds() {
         return inclusionIds;
-    }
-
-    public Charset getEncoding() {
-        return encoding;
-    }
-
-    public void setEncoding(Charset encoding) {
-        this.encoding = encoding;
-    }
-
-    public Charset getDecoding() {
-        return decoding;
-    }
-
-    public void setDecoding(Charset decoding) {
-        this.decoding = decoding;
     }
 
     public boolean isWithStacktrace() {
@@ -271,6 +259,11 @@ public class OptionParser {
                 return null;
             }
 
+            if (cl.hasOption(LIST_ENCODINGS_LONGOPT)) {
+                setReportingEncodings(true);
+                return null;
+            }
+
             parsePositionalArgs(opts, cl.getArgs());
 
             Properties properties = cl.getOptionProperties("D");
@@ -293,23 +286,11 @@ public class OptionParser {
                                            cl.getOptionValue(SERIALIZATION_OPT),
                                            SERIALIZATION_PROPERTY),
                                opts);
-            if (!parseCharset(parseOption(properties,
-                                          cl.getOptionValue(CHARSET_LONGOPT),
-                                          CHARSET_PROPERTY),
-                              CHARSET_LONGOPT,
-                              opts))
-            {
-                parseCharset(parseOption(properties,
-                                         cl.getOptionValue(DECODING_LONGOPT),
-                                         INPUT_CHARSET_PROPERTY),
-                             INPUT_CHARSET_PROPERTY,
-                             opts);
-                parseCharset(parseOption(properties,
-                                         cl.getOptionValue(ENCODING_LONGOPT),
-                                         OUTPUT_CHARSET_PROPERTY),
-                             INPUT_CHARSET_PROPERTY,
-                             opts);
-            }
+            parseCharset(parseOption(properties,
+                                     cl.getOptionValue(CHARSET_LONGOPT),
+                                     CHARSET_PROPERTY),
+                         CHARSET_LONGOPT,
+                         opts);
             setWithStacktrace(cl.hasOption(STACKTRACE_LONGOPT));
         } catch (OptionParseError e) {
             System.err.println(e.getMessage());
@@ -497,20 +478,15 @@ public class OptionParser {
         Charset ch = null;
         try {
             if (s != null) {
-                ch = Charset.forName(s);
+                ch = CharsetICU.forName(s);
             }
         } catch (IllegalCharsetNameException e) {
             throw new  OptionParseError(e);
         } catch (UnsupportedCharsetException e) {
             throw new  OptionParseError(e);
         }
-        if (ENCODING_LONGOPT.equals(opt))
-            setEncoding(ch);
-        if (DECODING_LONGOPT.equals(opt))
-            setDecoding(ch);
         if (CHARSET_LONGOPT.equals(opt)) {
-            setEncoding(ch);
-            setDecoding(ch);
+            setCharset(ch);
         }
         return ch != null;
     }
@@ -608,22 +584,6 @@ public class OptionParser {
             .longOpt("comments")
             .build();
         opts.addOption(comments);
-        Option inputCharset =
-            Option.builder(DECODING_LONGOPT)
-            .desc(INPUT_CHARSET_DESC)
-            .argName("charset")
-            .longOpt(DECODING_LONGOPT)
-            .numberOfArgs(1)
-            .build();
-        opts.addOption(inputCharset);
-        Option outputCharset =
-            Option.builder(ENCODING_LONGOPT)
-            .desc(OUTPUT_CHARSET_DESC)
-            .argName("charset")
-            .longOpt(ENCODING_LONGOPT)
-            .numberOfArgs(1)
-            .build();
-        opts.addOption(outputCharset);
         Option charset =
             Option.builder(CHARSET_LONGOPT)
             .desc(CHARSET_DESC)
@@ -638,6 +598,12 @@ public class OptionParser {
             .longOpt(LIST_CHARSETS_LONGOPT)
             .build();
         opts.addOption(listCharsets);
+        Option listEncodings =
+            Option.builder(LIST_ENCODINGS_LONGOPT)
+            .desc(LIST_ENCODINGS_DESC)
+            .longOpt(LIST_ENCODINGS_LONGOPT)
+            .build();
+        opts.addOption(listEncodings);
         Option stackTrace =
             Option.builder(STACKTRACE_LONGOPT)
             .desc(STACKTRACE_DESC)
@@ -671,7 +637,7 @@ public class OptionParser {
     }
 
     private void listCharsets() {
-        Map<String, Charset> charsets = Charset.availableCharsets();
+        Map<String, Charset> charsets = CharsetICU.availableCharsets();
         String[] keys = charsets.keySet().toArray(new String[0]);
         Arrays.sort(keys);
             for (String key : keys) {

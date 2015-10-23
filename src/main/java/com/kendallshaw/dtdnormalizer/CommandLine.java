@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Set;
 
 import org.xml.sax.InputSource;
 
@@ -26,17 +24,16 @@ public class CommandLine {
         OptionParser op = null;
         try {
             op = new OptionParser().parseCommandLine(args);
-            InputSource input =
-                inputSource(op.getInputPath(), op.getEncoding());
-            OutputIdentifier output =
-                outputDestination(op.getOutputPath(), op.getDecoding());
             IdentifierResolver resolver =
                 new IdentifierResolver(op.getCatalogList());
-            input = inputSource(op.getInputPath(), op.getEncoding());
+            InputSource input = resolver.resolveEntity(null, op.getInputPath());
+            OutputIdentifier output =
+                outputDestination(op.getOutputPath(), op.getCharset());
             XniConfiguration configuration = new XniConfiguration();
             op.parameterize(configuration);
             DtdNormalizer normalizer = new DtdNormalizer(configuration);
-            Serialization serialization = serialization(normalizer, input, op);
+            Serialization serialization =
+                serialization(normalizer, input, output, op);
             normalizer.setSerialization(serialization);
             normalizer.setIdentifierResolver(resolver);
             normalizer.setErrorHandler(new ErrorHandler(serialization));
@@ -58,13 +55,11 @@ public class CommandLine {
     }
 
     public Serialization serialization(DtdNormalizer normalizer,
-                                       InputSource is, OptionParser op)
+                                       InputSource in, OutputIdentifier out,
+                                       OptionParser op)
         throws Exception
     {
         Serialization ser = null;
-        normalizer.setInput(is);
-        OutputIdentifier out = outputDestination(op.getOutputPath(),
-                                                 op.getDecoding());
         if ("dtd".equals(op.getSerialization())) {
             DtdSerialization ds = new DtdSerialization(out.getByteStream(),
                                                        out.getEncoding());

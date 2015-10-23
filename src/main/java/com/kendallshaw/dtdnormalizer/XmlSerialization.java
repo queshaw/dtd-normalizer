@@ -97,6 +97,16 @@ public class XmlSerialization
         locator = loc;
     }
 
+    @Override
+    public boolean isIncludingAll() {
+        return true;
+    }
+
+    @Override
+    public void setIncludingAll(boolean f) {
+        // ignore
+    }
+
     // TODO fix encoding
     @Override
     public void resetTargetResource(URI uri)

@@ -1,2 +1,3 @@
+<!ENTITY asdf "FDSA">
 <!ELEMENT doc (p+)>
 <!ELEMENT p (#PCDATA)>

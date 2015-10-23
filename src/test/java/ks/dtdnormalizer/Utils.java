@@ -23,6 +23,7 @@ import com.kendallshaw.dtdnormalizer.Constants;
 import com.kendallshaw.dtdnormalizer.DtdNormalizer;
 import com.kendallshaw.dtdnormalizer.DtdSerialization;
 import com.kendallshaw.dtdnormalizer.ErrorHandler;
+import com.kendallshaw.dtdnormalizer.IdentifierResolver;
 import com.kendallshaw.dtdnormalizer.OutputIdentifier;
 import com.kendallshaw.dtdnormalizer.Serialization;
 import com.kendallshaw.dtdnormalizer.XmlSerialization;
@@ -76,6 +77,7 @@ public class Utils {
             ser = new DtdSerialization(osw);
         dn.setSerialization(ser);
         dn.setErrorHandler(new ErrorHandler(ser));
+        dn.setIdentifierResolver(new IdentifierResolver());
         dn.serialize();
     }
 

@@ -14,7 +14,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.kendallshaw.dtdnormalizer.CommandLine;
-import com.kendallshaw.dtdnormalizer.OldCommandLine;
 
 public class TestCommandLine {
 
@@ -39,12 +38,9 @@ public class TestCommandLine {
             StringReader sr = new StringReader(cb.toString());
             BufferedReader br = new BufferedReader(sr);
             Set<String> expected = new HashSet<String>();
-            expected.add("<!ENTITY afr \""
-                         + new String(Character.toChars(0x1d51e))
-                         + "\">");
-            expected.add("<!ENTITY Afr \""
-                         + new String(Character.toChars(0x1d504))
-                         + "\">");
+            expected.add("<!ENTITY snook \"SNOOK\">");
+            expected.add("<!ENTITY afr \"&#x1D51E;\">");
+            expected.add("<!ENTITY Afr \"&#x1D504;\">");
             expected.add("<!ENTITY fraktur-z \""
                          + new String(Character.toChars(0x1d59f))
                          + "\">");
@@ -192,6 +188,60 @@ public class TestCommandLine {
         }
     }
 
+    @Test
+    public void testUtf16BeBomDtd() {
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        String[] args = {
+            "src/test/resources/characters/characters-16.xml",
+            "-sdtd",
+            "--entities"
+        };
+        CommandLine cl = new CommandLine();
+        try {
+            cl.normalize(args);
+            ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
+            CharBuffer cb = Charset.forName("UTF-8").decode(bb);
+            StringReader sr = new StringReader(cb.toString());
+            BufferedReader br = new BufferedReader(sr);
+            Set<String> expected = new HashSet<String>();
+            expected.add("<!ENTITY right \""
+                         + new String(Character.toChars(0xFFEB))
+                         + "\">");
+            expected.add("<!ENTITY right-hex \"&#xFFEB;\">");
+            expected.add("<!ENTITY kana \""
+                         + new String(Character.toChars(0x1B000))
+                         + "\">");
+            expected.add("<!ENTITY kana-hex \"&#x1B000;\">");
+            expected.add("<!ENTITY a \""
+                         + new String(Character.toChars(0x10300))
+                         + "\">");
+            expected.add("<!ENTITY a-hex \"&#x10300;\">");
+            expected.add("<!ENTITY bar \""
+                         + new String(Character.toChars(0x1D100))
+                         + "\">");
+            expected.add("<!ENTITY bar-hex \"&#x1D100;\">");
+            expected.add("<!ENTITY coda \""
+                         + new String(Character.toChars(0x1D10C))
+                         + "\">");
+            expected.add("<!ENTITY coda-hex \"&#x1D10C;\">");
+            expected.add("<!ENTITY some \"right &right; hex &right-hex;"
+                         + " and &a; and &a-hex; and code &coda; hex"
+                         + " &coda-hex;\">");
+            String line = br.readLine();
+            while (line != null) {
+                expected.remove(line);
+                line = br.readLine();
+            }
+            Assert.assertEquals(0, expected.size());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        } finally {
+            System.setOut(stdout);
+        }
+    }
+
     private void testAllEntities(ByteArrayOutputStream baos) throws Exception {
         ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
         CharBuffer cb = Charset.forName("UTF-8").decode(bb);
@@ -203,23 +253,14 @@ public class TestCommandLine {
         expected.add("<!ENTITY asdf \"'\">");
         expected.add("<!ENTITY other \"a&asdf;\">");
         expected.add("<!ENTITY double-quote \"&#x22;\">");
-        expected.add("<!ENTITY text \"Abc &amp; ("
-                     + new String(Character.toChars(0x1d35))
-                     + ") 123 &bork; xyz "
-                     + new String(Character.toChars(0x1d35))
-                     + "\">");
-        expected.add("<!ENTITY afr \""
-                     + new String(Character.toChars(0x1d51e))
-                     + "\">");
-        expected.add("<!ENTITY Afr \""
-                     + new String(Character.toChars(0x1d504))
-                     + "\">");
+        expected.add("<!ENTITY text \"Abc &amp; (&#x1D35;) 123 &bork; xyz "
+                     + "&#x1D35;\">");
+        expected.add("<!ENTITY afr \"&#x1D51E;\">");
+        expected.add("<!ENTITY Afr \"&#x1D504;\">");
         expected.add("<!ENTITY fraktur-z \""
                      + new String(Character.toChars(0x1d59f))
                      + "\">");
-        expected.add("<!ENTITY gcirc \""
-                     + new String(Character.toChars(0x11d))
-                     + "\">");
+        expected.add("<!ENTITY gcirc \"&#x0011D;\">");
         String line = br.readLine();
         while (line != null) {
             expected.remove(line);

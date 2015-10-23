@@ -1,9 +1,14 @@
 package com.kendallshaw.dtdnormalizer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XNIException;
@@ -11,16 +16,21 @@ import org.apache.xerces.xni.parser.XMLEntityResolver;
 import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xml.resolver.Catalog;
 import org.apache.xml.resolver.CatalogManager;
+import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.ext.EntityResolver2;
 
-public class IdentifierResolver implements XMLEntityResolver, EntityResolver2 {
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
+
+public class IdentifierResolver implements XMLEntityResolver, EntityResolver {
 
     private final static CatalogManager CM = new CatalogManager();
     private Catalog catalog = null;
 
-    protected IdentifierResolver() { }
+    public IdentifierResolver() throws Exception {
+        this(null);
+    }
 
     public IdentifierResolver(final String catalogPath) throws Exception {
         CM.setIgnoreMissingProperties(true);
@@ -36,20 +46,28 @@ public class IdentifierResolver implements XMLEntityResolver, EntityResolver2 {
             throws XNIException, IOException {
         final String publicId = id.getPublicId();
         final String systemId = id.getExpandedSystemId();
-        final String base = catalog.getCurrentBase();
-        String resolved = null;
-        if (publicId == null)
-            resolved = catalog.resolveSystem(systemId);
-        else
-            resolved = catalog.resolvePublic(publicId, systemId);
-        if (resolved == null)
-            return new XMLInputSource(id);
-        else
-            return new XMLInputSource(publicId, resolved, base);
+        String baseId = catalog.getCurrentBase();
+        XMLInputSource xis = null;
+        InputSource is = null;
+        try {
+            is = resolveEntity(publicId, systemId);
+        } catch (SAXException e) {
+            throw new XNIException(e);
+        }
+        if (is.getCharacterStream() == null) {
+            xis = new XMLInputSource(id);
+        } else {
+            xis = new XMLInputSource(publicId, is.getSystemId(), baseId);
+            xis.setCharacterStream(is.getCharacterStream());
+            xis.setEncoding(is.getEncoding());
+        }
+        return xis;
     }
 
     @Override
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+    public InputSource resolveEntity(String publicId, String systemId)
+        throws SAXException, IOException
+    {
         String resolved = null;
         if (publicId == null)
             resolved = catalog.resolveSystem(systemId);
@@ -57,25 +75,67 @@ public class IdentifierResolver implements XMLEntityResolver, EntityResolver2 {
             resolved = catalog.resolvePublic(publicId, systemId);
         if (resolved == null)
             resolved = systemId;
+        File f = systemIdFile(resolved);
         InputSource is = new InputSource();
         is.setSystemId(resolved);
-        is.setByteStream(new FileInputStream(new File(resolved)));
+        if (f != null) {
+            byte[] bytes = fileBytes(f);
+            if (bytes != null) {
+                CharsetDetector detector = new CharsetDetector();
+                detector.setText(bytes);
+                CharsetMatch cm = detector.detect();
+                is.setCharacterStream(cm.getReader());
+                is.setSystemId(f.toURI().toASCIIString());
+                is.setEncoding(cm.getName());
+            }
+        }
         return is;
     }
 
-    @Override
-    public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-        StringReader sr = new StringReader("");
-        InputSource is = new InputSource();
-        is.setCharacterStream(sr);
-        is.setSystemId("urn:dtd:internal");
-        return is;
+    private File systemIdFile(String systemId) {
+        File f = null;
+        URI uri = null;
+        try {
+            uri = new URI(systemId);
+            if ("file".equals(uri.getScheme()))
+                return new File(uri);
+            return null;
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
-    @Override
-    public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId)
-            throws SAXException, IOException {
-        // TODO Auto-generated method stub
-        return null;
+    private byte[] fileBytes(File f) throws IOException {
+        FileInputStream fis = null;
+        FileChannel fch = null;
+        ByteBuffer bb = null;
+        byte[] bytes = null;
+            try {
+                fis = new FileInputStream(f);
+                fch = fis.getChannel();
+                Long size = Long.valueOf(fch.size());
+                bb = ByteBuffer.allocate(size.intValue());
+                fch.read(bb);
+                bb.rewind();
+                bytes = bb.array();
+            } finally {
+                if (fch != null)
+                    fch.close();
+                if (fis != null)
+                    fis.close();
+            }
+        return bytes;
+    }
+
+    private byte[] streamBytes(InputStream is) throws IOException {
+        int i = 0;
+        int remaining = is.available();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(remaining);
+        int b = is.read();
+        while (b > -1) {
+            baos.write(b);
+            b = is.read();
+        }
+        return baos.toByteArray();
     }
 }

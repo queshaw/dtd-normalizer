@@ -80,10 +80,12 @@ public class TestDtdNormalizer extends Utils {
     public void inputFileAndOutputFile() {
         File f = new File("src/test/resources/simple.xml");
         File fo = new File("tmp/simple-out.xml");
+        fo.getParentFile().mkdirs();
         try {
             normalizerIO(fileInput(f), fileOutput(fo), "xml");
             assertSimpleXml(fileBytes(fo));
         } catch (Exception e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         } finally {
         }
