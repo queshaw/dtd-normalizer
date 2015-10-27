@@ -6,26 +6,55 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.xml.sax.InputSource;
+
+import com.kendallshaw.xml.EntityMonitor;
 
 public class CommandLine {
 
     public static void main(String[] args) {
         try {
-            new CommandLine().normalize(args);
+            new CommandLine().execute(args);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
-    public void normalize(String[] args) throws Exception {
+    public void execute(String[] args) throws Exception {
         OptionParser op = null;
         try {
             op = new OptionParser().parseCommandLine(args);
+            if (op.isReporting())
+                report(op);
+            else
+                normalize(op);
+        } catch (Exception e) {
+            if (e.getMessage() == null) {
+                e.printStackTrace();
+            } else if (op == null || !op.isWithStacktrace())
+                System.err.println(e.getMessage());
+            else
+                e.printStackTrace();
+        }
+    }
+
+    public void report(OptionParser op) throws Exception {
+        InputSource input =
+            inputSource(op.getInputPath(), op.getCharset());
+        ReportWriter.report(input, op);
+    }
+
+    public void normalize(OptionParser op) throws Exception {
+        try {
             IdentifierResolver resolver =
                 new IdentifierResolver(op.getCatalogList());
+            if (op.isReporting())
+                resolver.setReportingEncodings(true);
+            
+            resolver.setReportingEntities(true);
             InputSource input = resolver.resolveEntity(null, op.getInputPath());
             OutputIdentifier output =
                 outputDestination(op.getOutputPath(), op.getCharset());

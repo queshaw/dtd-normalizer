@@ -43,10 +43,26 @@ public class ErrorHandler implements XMLErrorHandler {
 	}
 
     protected void logError(final String type, final String key,
-    		                final XNIException e)
-        throws XNIException {
+    		                final XMLParseException e)
+        throws XNIException
+    {
 		final Serialization l = getLogger();
-		l.text(type);
-		l.text(" " + key);
+		if (l == null) {
+		    int line = e.getLineNumber();
+		    int col = e.getColumnNumber();
+		    StringBuilder sb = new StringBuilder();
+		    sb.append(e.getExpandedSystemId());
+		    if (line > -1) {
+		        if (col > -1)
+		            sb.append(String.format(" [%s:%s]", line, col));
+		        else
+                    sb.append(String.format(" [%s]", line));
+		    }
+		    sb.append(" " + e.getLocalizedMessage());
+		    System.err.println(sb.toString());
+		} else {
+		    l.text(type);
+		    l.text(" " + key);
+		}
     }
 }

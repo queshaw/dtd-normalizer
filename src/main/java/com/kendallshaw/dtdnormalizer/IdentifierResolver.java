@@ -1,10 +1,8 @@
 package com.kendallshaw.dtdnormalizer;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
@@ -22,28 +20,78 @@ import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
+import com.kendallshaw.xml.EntityMonitor;
 
 public class IdentifierResolver implements XMLEntityResolver, EntityResolver {
 
-    private final static CatalogManager CM = new CatalogManager();
+    private CatalogManager catalogManager = null;
+
     private Catalog catalog = null;
+
+    private EntityMonitor entityMonitor;
+
+    private boolean reportingCatalogs = false;
+
+    private boolean reportingEncodings = false;
+
+    private boolean reportingEntities = false;
 
     public IdentifierResolver() throws Exception {
         this(null);
     }
 
-    public IdentifierResolver(final String catalogPath) throws Exception {
-        CM.setIgnoreMissingProperties(true);
-        if (catalogPath != null) {
-            CM.setCatalogFiles(catalogPath);
-        }
-        CM.setUseStaticCatalog(false);
-        catalog = CM.getCatalog();
+    public IdentifierResolver(final String catalogPath)
+        throws Exception
+    {
+        this(catalogPath, null);
+    }
+
+    public IdentifierResolver(final String catalogPath,
+                              final CatalogManager catalogManager)
+        throws Exception
+    {
+        if (catalogManager == null)
+            this.catalogManager = new CatalogManager();
+        else
+            this.catalogManager = catalogManager;
+
+        if (catalogPath != null)
+            this.catalogManager.setCatalogFiles(catalogPath);
+
+        String ignore = System.getProperty("xml.catalog.ignoreMissing", "yes");
+        this.catalogManager.setIgnoreMissingProperties("yes".equals(ignore));
+        this.catalogManager.setUseStaticCatalog(false);
+        this.catalogManager.setRelativeCatalogs(false);
+        catalog = this.catalogManager.getCatalog();
+    }
+
+    public boolean isReportingEncodings() {
+        return reportingEncodings;
+    }
+
+    public void setReportingEncodings(boolean reportingEncodings) {
+        this.reportingEncodings = reportingEncodings;
+    }
+
+    public boolean isReportingEntities() {
+        return reportingEntities;
+    }
+
+    public void setReportingEntities(boolean reportingEntities) {
+        this.reportingEntities = reportingEntities;
+    }
+
+    public EntityMonitor getEntityMonitor() {
+        return entityMonitor;
+    }
+    public void setEntityMonitor(EntityMonitor entityMonitor) {
+        this.entityMonitor = entityMonitor;
     }
 
     @Override
     public XMLInputSource resolveEntity(XMLResourceIdentifier id)
-            throws XNIException, IOException {
+        throws XNIException, IOException
+    {
         final String publicId = id.getPublicId();
         final String systemId = id.getExpandedSystemId();
         String baseId = catalog.getCurrentBase();
@@ -75,6 +123,7 @@ public class IdentifierResolver implements XMLEntityResolver, EntityResolver {
             resolved = catalog.resolvePublic(publicId, systemId);
         if (resolved == null)
             resolved = systemId;
+
         File f = systemIdFile(resolved);
         InputSource is = new InputSource();
         is.setSystemId(resolved);
@@ -87,13 +136,19 @@ public class IdentifierResolver implements XMLEntityResolver, EntityResolver {
                 is.setCharacterStream(cm.getReader());
                 is.setSystemId(f.toURI().toASCIIString());
                 is.setEncoding(cm.getName());
+                EntityMonitor em = getEntityMonitor();
+                if (em != null) {
+                    if (publicId == null)
+                        em.resolveEntity(resolved, cm.getName());
+                    else
+                        em.resolveEntity(publicId, resolved, cm.getName());
+                }
             }
         }
         return is;
     }
 
     private File systemIdFile(String systemId) {
-        File f = null;
         URI uri = null;
         try {
             uri = new URI(systemId);
@@ -125,17 +180,5 @@ public class IdentifierResolver implements XMLEntityResolver, EntityResolver {
                     fis.close();
             }
         return bytes;
-    }
-
-    private byte[] streamBytes(InputStream is) throws IOException {
-        int i = 0;
-        int remaining = is.available();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(remaining);
-        int b = is.read();
-        while (b > -1) {
-            baos.write(b);
-            b = is.read();
-        }
-        return baos.toByteArray();
     }
 }

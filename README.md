@@ -16,18 +16,53 @@ internal subset is also parsed.
 
 By default system identifiers are resolved literally, i.e. relative
 URIs are resolved relative to the document that they are referenced
-from. Absolute URIs are resolved by the builtin JVM URL stream handler
-factory.
+from, as per the XML standard. Absolute URIs are resolved by the JVM
+URL stream handler factory.
 
 If OASIS XML catalogs are found, XML commons resolver is used to
 resolve public and system identifies mapped in the catalogs.
 
+### XML catalogs
+
 In order of preference, XML catalogs to use can be specified as a
-semi-colon separated list, on the command line using the `--catalog`
+semi-colon separated list, on the command line using the `--catalogs`
 option, by setting the `xml.catalog.files` system property or by
 setting the `catalogs` property in a `CatalogManager.properties` file
 that is found on the classpath. Other settings from the properties
 file are merged if the list of catalog files is specified separately.
+
+Some settings are always overridden. The result is as if
+`CatalogManager.properties` were found and it had these property
+specifications:
+
+```
+static-catalog=no
+relative-catalogs=no
+```
+
+the later means that if relative catalog paths are found in a
+`CatalogManager.properties` file, they are resolved relative to the
+location of the properties file (as opposed to being relative to the
+current directory).
+
+If the system property `xml.catalog.ignoreMissing` is not set, it is
+treated as if `xml.catalog.ignoreMissing=yes` were specified, meaning
+that no warning is printed if `CatalogManager.properties` is not
+found.
+
+## Character encoding
+
+The character encoding of each entity is detected using the unicode
+library ICU4J, it is unusual but possible for the encoding to have
+been detected incorrectly.
+
+The option `--report=charsets` can be used to see what encodings were
+detected.
+
+The charset used to encode the serialization can be specified using
+the `--charset` option.
+
+The available charsets can be listed using the `--charsets` option.
 
 ## XML serialization
 
@@ -45,10 +80,10 @@ separately as they were in their entities.
 
 ### Entity declarations
 
-Unparsed entity declarations are included in the serialization as are
+Unparsed entity declarations are included in the serialization, as are
 declarations of internal general entities which have been referenced
 in an attribute default value, or in another internal entity
-declaration.
+declaration that is included in the serialization.
 
 ### Entity sets
 
@@ -56,8 +91,8 @@ Entity declarations are omitted, except for those mentioned above,
 those in the internal DTD subset (within the DOCTYPE statement), or if
 their inclusion in the serialization is indicated.
 
-A typical reason to include entity declarations is when they are
-character entity declarations.
+A typical reason to include entity declarations would be to make 
+character entities available which are declared in entity sets.
 
 Inclusion is indicated when the entity is declared directly or
 declared within an entity reference, and the declaration occurs within
@@ -73,11 +108,10 @@ A list of entity sets can be specified in a file referenced by the
 candidate general entity declarations is indicated.
 
 If the external DTD subset entity is one of the specified entity sets,
-all candidiate general entity declarations in the DTD.
-redefinitions are included.
+all candidiate general entity declarations in the DTD are included.
 
-The list file format accepts lines specifying a
-public id, a system id, a comment or an empty line. For example:
+The list file format accepts lines specifying a public id, a system
+id, a comment or an empty line. For example:
 
 ```
 \# This is a comment

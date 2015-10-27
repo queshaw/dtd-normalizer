@@ -162,7 +162,7 @@ public class DtdHandler extends XniConfigurationSources
         } else {
             entityDecls.put(name, EntityType.EXTERNAL);
             s.externalEntityDeclaration(name,
-                                        id.getLiteralSystemId(),
+                                        id.getPublicId(),
                                         id.getLiteralSystemId());
         }
     }

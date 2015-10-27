@@ -1,0 +1,23 @@
+<!NOTATION text PUBLIC "-//KS//NOTATION Text//EN">
+
+<!NOTATION jpeg PUBLIC "-//KS//NOTATION Jpeg//EN" "http://example.com">
+
+<!ELEMENT boilerplate (#PCDATA)>
+<!ATTLIST boilerplate
+          NOTATION (text|jpeg) #REQUIRED>
+<!ELEMENT pre (#PCDATA)>
+<!ATTLIST pre
+          NOTATION (text) #FIXED "text">
+
+<!ELEMENT notations (pre, boilerplate, atts)>
+
+<!ELEMENT atts (att-one, att-many)>
+<!ELEMENT att-one EMPTY>
+<!ATTLIST att-one arf ENTITY #REQUIRED>
+
+<!ELEMENT att-many EMPTY>
+<!ATTLIST att-many arf ENTITIES #REQUIRED>
+
+
+
+

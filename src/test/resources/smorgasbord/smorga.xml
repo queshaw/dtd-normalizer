@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE root PUBLIC "-//KS//DTD Smorgasbord//EN" "/home/kshaw/src/dtd-normalizer/src/test/resources/smorgasbord/smorga.dtd" [
+<!ENTITY some-text SYSTEM "data/text.txt" NDATA text>
+<!ENTITY some-jpeg SYSTEM "data/jpeg.jpg" NDATA jpeg>
+]>
+<root>
+    <any></any>
+    <empty/>
+    <text></text>
+    <mixed></mixed>
+    <children>
+        <seq>
+            <b/>
+        </seq>
+        <or><a/></or>
+        <seq-or><e/></seq-or>
+    </children>
+    <attributes>
+        <string/>
+        <tokenized>
+            <id id="a1"/>
+            <tokens>
+                <one id="a2"/>
+                <two id="a3"/>
+                <ref href="a1"/>
+                <refs refs="a2 a3"/>
+            </tokens>
+        </tokenized>
+    </attributes>
+    <notations>
+        <pre></pre>
+        <boilerplate NOTATION="jpeg"></boilerplate>
+        <atts>
+            <att-one arf="some-text"></att-one>
+            <att-many arf="some-jpeg"></att-many>
+        </atts>
+    </notations>
+</root>

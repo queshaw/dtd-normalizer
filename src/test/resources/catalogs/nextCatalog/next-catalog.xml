@@ -1,0 +1,3 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="public">
+  <public publicId="-//TEST//DTD Test//EN" uri="test.dtd"/>
+</catalog>

@@ -1,0 +1,29 @@
+<!ELEMENT attributes (string, tokenized)>
+<!ELEMENT string EMPTY>
+<!ATTLIST string text CDATA #IMPLIED>
+
+<!ELEMENT tokenized (id, tokens)>
+
+<!ELEMENT id EMPTY>
+<!ATTLIST id id ID #REQUIRED>
+
+<!ELEMENT tokens (one, two, ref, refs)>
+
+<!ELEMENT idref EMPTY>
+<!ELEMENT one EMPTY>
+<!ATTLIST one
+          id ID #REQUIRED
+          type NMTOKEN #IMPLIED>
+
+<!ELEMENT two EMPTY>
+<!ATTLIST two
+          id ID #REQUIRED
+          types NMTOKENS #IMPLIED>
+
+<!ELEMENT ref EMPTY>
+<!ATTLIST ref href IDREF #REQUIRED>
+
+<!ELEMENT refs EMPTY>
+<!ATTLIST refs
+          refs IDREFS #REQUIRED>
+

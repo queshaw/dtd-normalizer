@@ -1,0 +1,12 @@
+<!ENTITY % children PUBLIC "-//KS//ENTITIES Child elements//EN" "elements/children.ent">
+%children;
+
+<!ENTITY % notations PUBLIC "-//KS//ENTITIES Notations//EN" "unparsed/notations.ent">
+%notations;
+
+<!ELEMENT root (any, empty, text, mixed, children, attributes, notations)>
+<!ELEMENT any ANY>
+<!ELEMENT empty EMPTY>
+<!ELEMENT text (#PCDATA)>
+<!ELEMENT mixed (#PCDATA|p)*>
+<!ELEMENT p (#PCDATA)>

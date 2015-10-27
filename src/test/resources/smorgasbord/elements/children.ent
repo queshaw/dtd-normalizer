@@ -1,0 +1,13 @@
+<!ENTITY % attlists PUBLIC "-//KS//ENTITIES Attributes//EN" "../attributes.ent">
+%attlists;
+
+<!ELEMENT children (seq, or, seq-or)>
+<!ELEMENT seq (a?, b+, c*)>
+<!ELEMENT or (a | b | c)>
+<!ELEMENT seq-or ((a| b)?, ((c, d)+ | (e, f*)))>
+<!ELEMENT a EMPTY>
+<!ELEMENT b EMPTY>
+<!ELEMENT c EMPTY>
+<!ELEMENT d EMPTY>
+<!ELEMENT e EMPTY>
+<!ELEMENT f EMPTY>

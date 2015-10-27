@@ -43,21 +43,19 @@ public class TestDtdNormalizer extends Utils {
     public static void main(String[] args) throws Exception {
 //        "--entities", "src/test/resources/entity-sets.cfg",
 
-//        String[] arghs = {
-//                "--catalog",
-//                "src/test/resources/entities/catalog.xml"
-//                + ";src/test/resources/entities-catalog.xml",
-//                "--entities", "src/test/resources/all-ents.cfg",
-//                "--comments", "no",
-//                "--serialization", "dtd",
-//                "src/test/resources/entities/nested.xml"
-//        };
         String[] arghs = {
-          "src/test/resources/content-models/groups.xml",
-          "-sdtd"
+                "-Dxml.catalog.verbosity=9",
+                "-C/home/kshaw/opt/DITA-OT2.0/catalog-dita.xml",
+                "--serialization", "dtd",
+                "/home/kshaw/projects/relaxng/concept.xml",
+                "/tmp/out.dtd"
         };
+//        String[] arghs = {
+//          "src/test/resources/content-models/groups.xml",
+//          "-sdtd"
+//        };
         CommandLine cl = new CommandLine();
-        cl.normalize(arghs);
+        cl.execute(arghs);
     }
 
     @Test
@@ -111,12 +109,12 @@ public class TestDtdNormalizer extends Utils {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
         String[] args = {
-                "--catalog", "src/test/resources/conditional/catalog.xml",
+                "--catalogs", "src/test/resources/conditional/catalog.xml",
                 "src/test/resources/conditional.xml"
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         } finally {

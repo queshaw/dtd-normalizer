@@ -1,0 +1,4 @@
+<catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" prefer="public">
+  <nextCatalog catalog="../nextCatalog/next-catalog.xml"/>
+  <system systemId="test.xml" uri="../nextCatalog/test.xml"/>
+</catalog>

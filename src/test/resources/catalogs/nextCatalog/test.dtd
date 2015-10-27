@@ -1,0 +1,4 @@
+<!ELEMENT doc (_)>
+<!ELEMENT _ EMPTY>
+<!ENTITY content SYSTEM "a.xml">
+

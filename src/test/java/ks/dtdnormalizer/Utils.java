@@ -9,14 +9,19 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 
 import org.junit.Assert;
+import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
 import com.kendallshaw.dtdnormalizer.Constants;
@@ -30,6 +35,11 @@ import com.kendallshaw.dtdnormalizer.XmlSerialization;
 import com.kendallshaw.dtdnormalizer.XniConfiguration;
 
 public class Utils {
+
+    public static final String ISUBSET = "/document-type";
+
+    public static final String ESUBSET = 
+        "/document-type/external-subset";
 
     public void normalizerIO(String inPath, String outPath,
                              String serializationName)
@@ -182,6 +192,40 @@ public class Utils {
                     "/*/external-subset/element-declaration[@name='doc']");
     }
 
+    public String nodeText(Document doc, String expression)
+        throws Exception
+    {
+        XPathFactory xf = XPathFactory.newInstance();
+        XPath xpath = xf.newXPath();
+        return (String) xpath.evaluate(expression, doc, XPathConstants.STRING);
+    }
+
+    public String esubRawText(String name) {
+        return String.format("%s//%s",
+                             ESUBSET,
+                             entityRawText(name));
+    }
+
+    public String esubText(String name) {
+        return String.format("%s//%s",
+                             ESUBSET,
+                             entityText(name));
+    }
+
+    public String isubText(String name) {
+        return String.format("%s/%s",
+                             ISUBSET,
+                             entityText(name));
+    }
+
+    public String entityText(String name) {
+        return String.format("entity-declaration[@name=\'%s\']/text", name);
+    }
+
+    public String entityRawText(String name) {
+        return String.format("entity-declaration[@name=\'%s\']/raw-text", name);
+    }
+
     public void assertMatch(String msg, InputSource is, String expression)
         throws Exception
     {
@@ -206,5 +250,29 @@ public class Utils {
         byte[] bytes = bb.array();
         fch.close();
         return bytes;
+    }
+
+    public boolean entityTextEquals(String expected,
+                                    Document doc, String exp)
+        throws Exception
+    {
+        return expected.equals(nodeText(doc, exp));
+    }
+
+    public boolean textEquals(String expected,
+                              byte[] bytes, String charset)
+        throws Exception
+    {
+        ByteBuffer bb = ByteBuffer.wrap(bytes);
+        CharBuffer cb = Charset.forName(charset).decode(bb);
+        return expected.equals(cb.toString());
+    }
+
+    public Document dom(byte[] bytes) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setValidating(false);
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        return db.parse(byteInput(bytes));
     }
 }

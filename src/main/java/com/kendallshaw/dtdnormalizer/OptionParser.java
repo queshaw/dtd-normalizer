@@ -7,15 +7,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +29,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import com.ibm.icu.charset.CharsetICU;
+import com.kendallshaw.net.ResourceUtils;
 
 public class OptionParser {
 
@@ -61,10 +65,11 @@ public class OptionParser {
         + " is specified, the output is written to standard out."
         + "\n\nReport errors to http://github.com/queshaw/dtd-normalizer.";
 
-    private static final String CATALOG_DESC =
-        String.format("(-D%s) Specifies a list of semi-colon separated OASIS"
-                      + " XML catalog files which can be used in"
-                      + " resolving entity resources.", "xml.catalog.files");
+    private static final String CATALOGS_DESC =
+        String.format("(-D%s) Specifies a list of OASIS XML catalog files,"
+                      + " separated by semi-colons, which can be used in"
+                      + " resolving entity resources.",
+                      "xml.catalog.files");
 
     private static final String SERIALIZATION_DESC =
         String.format("(-D%s) xml/dtd. default: xml. Specifies XML or DTD"
@@ -77,8 +82,11 @@ public class OptionParser {
     private static final String LIST_CHARSETS_DESC =
         String.format("Lists the charsets supported for encoding output.");
 
-    private static final String LIST_ENCODINGS_DESC =
-        String.format("Lists the encodings detected in external entities.");
+    private static final String REPORT_DESC =
+        String.format("encodings/entities/catalogs/all default: all."
+                      + " Lists external entities, their character encoding,"
+                      + " or catalogs loaded, multiple values can be specified,"
+                      + " separated by commas.");
 
     private static final String COMMENTS_DESC =
         String.format("(-D%s) true/yes/false/no default: false. Specifies"
@@ -98,7 +106,7 @@ public class OptionParser {
     private static final String HELP_DESC =
         "Writes this message to standard out.";
 
-    private static final String CATALOG_OPT = "C";
+    private static final String CATALOGS_OPT = "C";
 
     private static final String SERIALIZATION_OPT = "s";
 
@@ -106,7 +114,7 @@ public class OptionParser {
 
     private static final String LIST_CHARSETS_LONGOPT = "charsets";
 
-    private static final String LIST_ENCODINGS_LONGOPT = "encodings";
+    private static final String REPORT_LONGOPT = "report";
 
     private static final String COMMENTS_OPT = "c";
 
@@ -126,7 +134,13 @@ public class OptionParser {
 
     private Charset charset = null;
 
+    private boolean reporting = false;
+
     private boolean reportingEncodings = false;
+
+    private boolean reportingEntities = false;
+
+    private boolean reportingCatalogs = false;
 
     private boolean withComments = false;
 
@@ -145,7 +159,16 @@ public class OptionParser {
     private Pattern OREX =
         Pattern.compile("^--?[^= \t]+");
 
-    public OptionParser() { }
+    private URI currentDirectory; 
+
+    public OptionParser() {
+        try {
+            currentDirectory = new File(".").getCanonicalFile().toURI();
+        } catch (IOException e) {
+            System.err.println(e.getLocalizedMessage());
+            System.exit(1);;
+        }
+    }
 
     public String getInputPath() {
         return inputPath;
@@ -187,12 +210,36 @@ public class OptionParser {
         this.charset = charset;
     }
 
+    public boolean isReporting() {
+        return reporting;
+    }
+
+    public void setReporting(boolean reporting) {
+        this.reporting = reporting;
+    }
+
     public boolean isReportingEncodings() {
         return reportingEncodings;
     }
 
     public void setReportingEncodings(boolean reportingEncodings) {
         this.reportingEncodings = reportingEncodings;
+    }
+
+    public boolean isReportingEntities() {
+        return reportingEntities;
+    }
+
+    public void setReportingEntities(boolean reportingEntities) {
+        this.reportingEntities = reportingEntities;
+    }
+
+    public boolean isReportingCatalogs() {
+        return reportingCatalogs;
+    }
+
+    public void setReportingCatalogs(boolean reportingCatalogs) {
+        this.reportingCatalogs = reportingCatalogs;
     }
 
     public boolean isWithComments() {
@@ -259,22 +306,26 @@ public class OptionParser {
                 return null;
             }
 
-            if (cl.hasOption(LIST_ENCODINGS_LONGOPT)) {
-                setReportingEncodings(true);
-                return null;
-            }
-
             parsePositionalArgs(opts, cl.getArgs());
 
             Properties properties = cl.getOptionProperties("D");
-            setCatalogList(parseOption(properties,
-                                       cl.getOptionValue(CATALOG_OPT),
-                                       "xml.catalog.files"));
+            String catalogList = parseOption(properties,
+                                             cl.getOptionValue(CATALOGS_OPT),
+                                             "xml.catalog.files");
+            setCatalogList(parseCatalogList(catalogList));
 
             parseEntities(properties, opts,
                           cl.getOptionValue(ENTITIES_OPT),
                           cl.hasOption(ENTITIES_OPT),
                           ENTITIES_PROPERTY);
+
+            if (parseReport(opts,
+                            cl.getOptionValue(REPORT_LONGOPT),
+                            cl.hasOption(REPORT_LONGOPT)))
+            {
+                setReporting(true);
+                return this;
+            }
 
             parseComments(parseOptionalOption(properties,
                                               cl.getOptionValue(COMMENTS_OPT),
@@ -286,11 +337,13 @@ public class OptionParser {
                                            cl.getOptionValue(SERIALIZATION_OPT),
                                            SERIALIZATION_PROPERTY),
                                opts);
+
             parseCharset(parseOption(properties,
                                      cl.getOptionValue(CHARSET_LONGOPT),
                                      CHARSET_PROPERTY),
                          CHARSET_LONGOPT,
                          opts);
+
             setWithStacktrace(cl.hasOption(STACKTRACE_LONGOPT));
         } catch (OptionParseError e) {
             System.err.println(e.getMessage());
@@ -339,6 +392,16 @@ public class OptionParser {
     public void parameterize(XniConfiguration configuration) {
         configuration.setInclusionEntities(inclusionIds());
         configuration.setIncludingAll(isIncludingAll());
+    }
+
+    private String canonicalFilePath(String path)
+        throws IllegalArgumentException
+    {
+        try {
+            return ResourceUtils.canonicalFilePath(path); 
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private String checkInputPath(String path, Options opts) {
@@ -397,6 +460,53 @@ public class OptionParser {
             throw new OptionParseError(msg);
         }
         setWithComments(f);
+    }
+
+    private String parseCatalogList(String catalogList) {
+        if (catalogList == null)
+            return null;
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        StringTokenizer st = new StringTokenizer(catalogList, ";");
+        while (st.hasMoreTokens()) {
+            String s = st.nextToken();
+            if (first)
+                first = false;
+            else
+                sb.append(";");
+            sb.append(canonicalFilePath(s));
+        }
+        return sb.toString();
+    }
+
+    private boolean parseReport(Options opts, String optionValue,
+                                boolean specified)
+    {
+        if (!specified)
+            return false;
+
+        Set<String> values = new HashSet<String>();
+
+        StringTokenizer st = new StringTokenizer(optionValue, ",");
+        boolean first = true;
+        while (st.hasMoreTokens()) {
+            String s = st.nextToken();
+            if (first)
+                first = false;
+            else
+                values.add(s);
+        }
+
+        boolean all = false;
+        if (optionValue == null || values.contains("all"))
+            all = true;
+        if (values.contains("catalogs") || all)
+            setReportingCatalogs(true);
+        if (values.contains("charsets") || all)
+            setReportingEncodings(true);
+        if (values.contains("entities") || all)
+            setReportingEntities(true);
+        return specified;
     }
 
     private void parseEntities(Properties properties, Options opts,
@@ -560,11 +670,11 @@ public class OptionParser {
     private Options createOptions(String[] args) {
         Options opts = new Options();
         Option catalog =
-            Option.builder(CATALOG_OPT)
-            .desc(CATALOG_DESC)
+            Option.builder(CATALOGS_OPT)
+            .desc(CATALOGS_DESC)
             .argName("path[...;path]")
             .numberOfArgs(1)
-            .longOpt("catalog")
+            .longOpt("catalogs")
             .build();
         opts.addOption(catalog);
         Option serialization =
@@ -598,12 +708,15 @@ public class OptionParser {
             .longOpt(LIST_CHARSETS_LONGOPT)
             .build();
         opts.addOption(listCharsets);
-        Option listEncodings =
-            Option.builder(LIST_ENCODINGS_LONGOPT)
-            .desc(LIST_ENCODINGS_DESC)
-            .longOpt(LIST_ENCODINGS_LONGOPT)
+        Option report =
+            Option.builder(REPORT_LONGOPT)
+            .desc(REPORT_DESC)
+            .longOpt(REPORT_LONGOPT)
+            .argName("type[...,type]")
+            .numberOfArgs(1)
+            .optionalArg(true)
             .build();
-        opts.addOption(listEncodings);
+        opts.addOption(report);
         Option stackTrace =
             Option.builder(STACKTRACE_LONGOPT)
             .desc(STACKTRACE_DESC)

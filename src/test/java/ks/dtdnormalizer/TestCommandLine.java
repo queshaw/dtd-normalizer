@@ -12,10 +12,21 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 import com.kendallshaw.dtdnormalizer.CommandLine;
 
-public class TestCommandLine {
+public class TestCommandLine extends Utils {
+
+    public static void main(String[] args) throws Exception {
+        String[] arghs = {
+                "-sdtd",
+                "src/test/resources/smorgasbord/smorga.xml",
+                "/tmp/out.dtd"
+        };
+        CommandLine cl = new CommandLine();
+        cl.execute(arghs);
+    }
 
     @Test
     public void entitySets() {
@@ -23,7 +34,7 @@ public class TestCommandLine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
         String[] args = {
-                "--catalog",
+                "--catalogs",
                 "src/test/resources/entities/catalog.xml"
                 + ";src/test/resources/entities-catalog.xml",
                 "--entities", "src/test/resources/entity-sets.cfg",
@@ -32,7 +43,7 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
             ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
             CharBuffer cb = Charset.forName("UTF-8").decode(bb);
             StringReader sr = new StringReader(cb.toString());
@@ -63,7 +74,7 @@ public class TestCommandLine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
         String[] args = {
-                "--catalog",
+                "--catalogs",
                 "src/test/resources/entities/catalog.xml"
                 + ";src/test/resources/entities-catalog.xml",
                 "--entities", "src/test/resources/entity-sets.cfg",
@@ -72,7 +83,7 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
             ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
             CharBuffer cb = Charset.forName("UTF-8").decode(bb);
             StringReader sr = new StringReader(cb.toString());
@@ -104,12 +115,55 @@ public class TestCommandLine {
     }
 
     @Test
+    public void nestedEntitySetsXml() {
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        String[] args = {
+                "--catalogs",
+                "src/test/resources/entities/catalog.xml"
+                + ";src/test/resources/entities-catalog.xml",
+                "--entities", "src/test/resources/entity-sets.cfg",
+                "src/test/resources/entities/nested.xml"
+        };
+        CommandLine cl = new CommandLine();
+        try {
+            cl.execute(args);
+            Document doc = dom(baos.toByteArray());
+            Assert.assertEquals(nodeText(doc, esubText("before")), "BEFORE");
+            Assert.assertEquals(nodeText(doc, esubText("between")), "BETWEEN");
+            Assert.assertEquals(nodeText(doc, esubText("after")), "AFTER");
+            Assert.assertEquals(nodeText(doc, esubText("a")), "a");
+            Assert.assertEquals(nodeText(doc, esubText("b")), "b");
+            Assert.assertEquals(nodeText(doc, esubText("c")), "c");
+            Assert.assertEquals(nodeText(doc, esubText("one")), "1");
+            Assert.assertEquals(nodeText(doc, esubText("two")), "2");
+            Assert.assertEquals(nodeText(doc, esubText("hundred")), "100");
+            Assert.assertEquals(nodeText(doc, esubText("roman-one")), "i");
+            Assert.assertEquals(nodeText(doc, esubText("roman-two")), "ii");
+            Assert.assertEquals(nodeText(doc, esubText("roman-three")), "iii");
+            /*
+            Assert.assertEquals(nodeText(doc, esubText("text")),
+                                "Abc & ("
+                                + new String(Character.toChars(0x1D35))
+                                + ") 123 &bork; xyz "
+                                + new String(Character.toChars(0x1D35)));
+            
+            */
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        } finally {
+            System.setOut(stdout);
+        }
+    }
+
+    @Test
     public void allEntitiesByDoctype() {
         PrintStream stdout = System.out;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
         String[] args = {
-                "--catalog",
+                "--catalogs",
                 "src/test/resources/entities/catalog.xml"
                 + ";src/test/resources/entities-catalog.xml",
                 "--entities", "src/test/resources/doctype-entity.cfg",
@@ -118,7 +172,7 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
             testAllEntities(baos);
         } catch (Exception e) {
             Assert.fail(e.getMessage());
@@ -133,7 +187,7 @@ public class TestCommandLine {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         System.setOut(new PrintStream(baos));
         String[] args = {
-                "--catalog",
+                "--catalogs",
                 "src/test/resources/entities/catalog.xml"
                 + ";src/test/resources/entities-catalog.xml",
                 "--entities", 
@@ -142,8 +196,8 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
-            testAllEntities(baos);
+            cl.execute(args);
+            testAllEntitiesXml(baos);
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         } finally {
@@ -162,7 +216,7 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
             ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
             CharBuffer cb = Charset.forName("UTF-8").decode(bb);
             StringReader sr = new StringReader(cb.toString());
@@ -200,7 +254,7 @@ public class TestCommandLine {
         };
         CommandLine cl = new CommandLine();
         try {
-            cl.normalize(args);
+            cl.execute(args);
             ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
             CharBuffer cb = Charset.forName("UTF-8").decode(bb);
             StringReader sr = new StringReader(cb.toString());
@@ -267,5 +321,33 @@ public class TestCommandLine {
             line = br.readLine();
         }
         Assert.assertEquals(0, expected.size());
+    }
+
+    private void testAllEntitiesXml(ByteArrayOutputStream baos)
+        throws Exception
+    {
+        Document doc = dom(baos.toByteArray());
+        /*
+        Set<String> expected = new HashSet<String>();
+        expected.add("<!ENTITY snook \"SNOOK\">");
+        expected.add("<!ENTITY bork \"bork\">");
+        expected.add("<!ENTITY asdf \"'\">");
+        expected.add("<!ENTITY other \"a&asdf;\">");
+        expected.add("<!ENTITY double-quote \"&#x22;\">");
+        expected.add("<!ENTITY text \"Abc &amp; (&#x1D35;) 123 &bork; xyz "
+                     + "&#x1D35;\">");
+        expected.add("<!ENTITY afr \"&#x1D51E;\">");
+        expected.add("<!ENTITY Afr \"&#x1D504;\">");
+        expected.add("<!ENTITY fraktur-z \""
+                     + new String(Character.toChars(0x1d59f))
+                     + "\">");
+        expected.add("<!ENTITY gcirc \"&#x0011D;\">");
+        String line = br.readLine();
+        while (line != null) {
+            expected.remove(line);
+            line = br.readLine();
+        }
+        Assert.assertEquals(0, expected.size());
+        */
     }
 }
