@@ -314,7 +314,8 @@ public class DtdSerialization extends SerializationMixin
     {
         if (isWithComments())
             locationComment();
-        out("<!ELEMENT %s %s>\n", name, contentModel);
+        String cm = contentModel.replace(",", ", ").replace("|", " | ");
+        out("<!ELEMENT %s %s>\n", name, cm);
     }
 
     @Override
