@@ -9,11 +9,21 @@
 
 <!ELEMENT tokens (one, two, ref, refs)>
 
+<!ENTITY % this 'INCLUDE'>
+<!ENTITY % not-this 'IGNORE'>
+
 <!ELEMENT idref EMPTY>
 <!ELEMENT one EMPTY>
+<![%this;[
 <!ATTLIST one
           id ID #REQUIRED
           type NMTOKEN #IMPLIED>
+]]>
+<![%not-this;[
+<!ATTLIST one
+          bad-id ID #REQUIRED
+          bad-type NMTOKEN #IMPLIED>
+]]>
 
 <!ELEMENT two EMPTY>
 <!ATTLIST two
