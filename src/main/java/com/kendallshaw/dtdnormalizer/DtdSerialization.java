@@ -358,12 +358,12 @@ public class DtdSerialization extends SerializationMixin
             boolean first = true;
             for (final String e : enumeration) {
                 if (first)
-                    out(" %s", e);
+                    out("%s", e);
                 else
                     out(" | %s", e);
                 first = false;
             }
-            out(" )");
+            out(")");
         }
 
         if (defaultValue == null) {
