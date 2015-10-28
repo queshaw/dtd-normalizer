@@ -1,6 +1,6 @@
 package ks.dtdnormalizer;
 
-public TestCatalogs extends Utils {
+public class TestCatalogs extends Utils {
 
     public void serializationWithoutCatalog() {
     }
