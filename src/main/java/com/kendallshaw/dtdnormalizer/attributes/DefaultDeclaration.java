@@ -20,7 +20,8 @@ public class DefaultDeclaration {
         else {
             final String f = AttributeDeclaration.FIXED;
             if (f.equals(type) || type == null) {
-                fixed = f;
+                if (f.equals(type))
+                  fixed = f;
                 this.value = normalizedValue(value, '\"');
             }
         }

@@ -53,9 +53,10 @@ public class CommandLine {
                 new IdentifierResolver(op.getCatalogList());
             if (op.isReporting())
                 resolver.setReportingEncodings(true);
-            
+            // TODO remove this
             resolver.setReportingEntities(true);
-            InputSource input = resolver.resolveEntity(null, op.getInputPath());
+            resolver.setOffline(op.isOffline());
+            InputSource input = resolver.resolveEntity(null, fileToUri(op.getInputPath()));
             OutputIdentifier output =
                 outputDestination(op.getOutputPath(), op.getCharset());
             XniConfiguration configuration = new XniConfiguration();
@@ -134,5 +135,9 @@ public class CommandLine {
             out = new OutputIdentifier(fos, enc, f.toURI().toASCIIString());
         }
         return out;
+    }
+
+    private String fileToUri(String path) {
+    	return new File(path).toURI().toString();
     }
 }

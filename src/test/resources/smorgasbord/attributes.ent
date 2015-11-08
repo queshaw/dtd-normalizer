@@ -1,13 +1,22 @@
-<!ELEMENT attributes (string, tokenized)>
+<!ELEMENT attributes (string, tokenized, enumerations)>
 <!ELEMENT string EMPTY>
 <!ATTLIST string text CDATA #IMPLIED>
 
 <!ELEMENT tokenized (id, tokens)>
 
+<!ELEMENT enumerations EMPTY>
+<!ATTLIST enumerations
+          implied (a|b) #IMPLIED
+          defaulted (x|y|z) 'y'
+          fixed-enum (g|h|i) #FIXED 'i'>
+
 <!ELEMENT id EMPTY>
 <!ATTLIST id id ID #REQUIRED>
 
 <!ELEMENT tokens (one, two, ref, refs)>
+<!ATTLIST tokens
+          cdata-default CDATA 'cdata default value'
+          nmtoken-default NMTOKEN 'cdata-default-value'>
 
 <!ENTITY % this 'INCLUDE'>
 <!ENTITY % not-this 'IGNORE'>

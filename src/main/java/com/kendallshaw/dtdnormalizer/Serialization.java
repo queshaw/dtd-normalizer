@@ -30,7 +30,8 @@ public interface Serialization {
     void xmlDeclaration(String version, String encoding, String standalone)
         throws XNIException;
 
-    void doctypeDeclaration(String root, String publicId, String systemId)
+    void doctypeDeclaration(String root, String publicId,
+                            String systemId, String resourceId)
         throws XNIException;
 
     void textDeclaration(String version, String encoding)

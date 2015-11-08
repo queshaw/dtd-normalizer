@@ -236,6 +236,16 @@ public class Utils {
         Assert.assertTrue(msg, f);
     }
 
+    public void assertMatch(String msg, Document doc, String expression)
+        throws Exception
+    {
+        XPathFactory xf = XPathFactory.newInstance();
+        XPath xpath = xf.newXPath();
+        boolean f =
+            (Boolean) xpath.evaluate(expression, doc, XPathConstants.BOOLEAN);
+        Assert.assertTrue(msg, f);
+    }
+
     public byte[] fileBytes(File f) throws Exception {
         FileInputStream fis = new FileInputStream(f);
         FileChannel fch = fis.getChannel();

@@ -2,6 +2,7 @@ package ks.dtdnormalizer;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
@@ -20,9 +22,8 @@ public class TestCommandLine extends Utils {
 
     public static void main(String[] args) throws Exception {
         String[] arghs = {
-                "-sdtd",
                 "src/test/resources/smorgasbord/smorga.xml",
-                "/tmp/out.dtd"
+                "/tmp/out.xml"
         };
         CommandLine cl = new CommandLine();
         cl.execute(arghs);
@@ -158,6 +159,32 @@ public class TestCommandLine extends Utils {
     }
 
     @Test
+    public void smorgasbordXml() {
+        PrintStream stdout = System.out;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(baos));
+        String[] args = {
+            "src/test/resources/smorgasbord/smorga.xml",
+        };
+        CommandLine cl = new CommandLine();
+        try {
+            cl.execute(args);
+            Document doc = dom(baos.toByteArray());
+            assertDoctypeResourceidNormalized(doc, "src/test/resources/smorgasbord/smorga.dtd");
+            assertMatch("Expected unexpanded system id.",
+                        doc,
+                        "/document-type/doctype-declaration/system-id[.='smorga.dtd']");
+            assertMatch("Expected 2 unprased entity declarations in internal subset.",
+                        doc,
+                        "/document-type[count(*)=5][count(unparsed-entity-declaration)=2][xml-declaration][doctype-declaration]");
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        } finally {
+            System.setOut(stdout);
+        }
+    }
+
+    @Test
     public void allEntitiesByDoctype() {
         PrintStream stdout = System.out;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -191,7 +218,7 @@ public class TestCommandLine extends Utils {
                 "src/test/resources/entities/catalog.xml"
                 + ";src/test/resources/entities-catalog.xml",
                 "--entities", 
-                "--serialization", "dtd",
+                "--serialization", "xml",
                 "src/test/resources/entities/test.xml"
         };
         CommandLine cl = new CommandLine();
@@ -227,8 +254,8 @@ public class TestCommandLine extends Utils {
             expected.add("<!ENTITY a.png SYSTEM \"a.png\" NDATA png>");
             expected.add("<!NOTATION jpeg PUBLIC \"-//MEDIA JPEG//EN\">");
             expected.add("<!NOTATION png PUBLIC \"-//MEDIA PNG//EN\">");
-            expected.add("          data NOTATION ( jpeg ) #REQUIRED>");
-            expected.add("          data NOTATION ( jpeg | png ) #REQUIRED>");
+            expected.add("          data NOTATION (jpeg) #REQUIRED>");
+            expected.add("          data NOTATION (jpeg | png) #REQUIRED>");
             String line = br.readLine();
             while (line != null) {
                 expected.remove(line);
@@ -349,5 +376,12 @@ public class TestCommandLine extends Utils {
         }
         Assert.assertEquals(0, expected.size());
         */
+    }
+
+    private void assertDoctypeResourceidNormalized(Document doc, String dtdPath) throws Exception
+    {
+        String doctypeResourceid = nodeText(doc, String.format("/document-type/doctype-declaration/resource-id"));
+        String expected = new File(dtdPath).getCanonicalFile().toURI().toString();
+        Assert.assertEquals(doctypeResourceid, expected);
     }
 }

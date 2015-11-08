@@ -430,20 +430,20 @@ public class TestOptionParser {
         OptionParser op =
             new OptionParser().parseCommandLineWithoutExit(args);
         if (reporting)
-            Assert.assertTrue(op.isReporting());
+            Assert.assertTrue("Expected reporting.", op.isReporting());
         else
-            Assert.assertFalse(op.isReporting());
+            Assert.assertFalse("Expected not reporting.", op.isReporting());
         if (catalogs)
-            Assert.assertTrue(op.isReportingCatalogs());
+            Assert.assertTrue("Expected reporting catalogs.", op.isReportingCatalogs());
         else
-            Assert.assertFalse(op.isReportingCatalogs());
+            Assert.assertFalse("Expected not reporting catalogs.", op.isReportingCatalogs());
         if (charsets)
-            Assert.assertTrue(op.isReportingEncodings());
+            Assert.assertTrue("Expected reporting encodings.", op.isReportingEncodings());
         else
-            Assert.assertFalse(op.isReportingEncodings());
+            Assert.assertFalse("Expected not reporting encodings.", op.isReportingEncodings());
         if (entities)
-            Assert.assertTrue(op.isReportingEntities());
+            Assert.assertTrue("Expected reporting entities.", op.isReportingEntities());
         else
-            Assert.assertFalse(op.isReportingEntities());
+            Assert.assertFalse("Expected not reporting entities.", op.isReportingEntities());
     }
 }

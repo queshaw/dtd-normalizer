@@ -99,6 +99,10 @@ public class OptionParser {
                       + " identifiers of entity sets to be included in the"
                       + " DTD  serialization.", ENTITIES_PROPERTY);
 
+    private static final String OFFLINE_DESC =
+        String.format("Specifies that URIs addressing a network resource"
+        		       + " should not be resolved..");
+
     private static final String STACKTRACE_DESC =
         String.format("Includes a stacktrace, if possible, after an error"
                       + " occurs.");
@@ -121,6 +125,8 @@ public class OptionParser {
     private static final String ENTITIES_OPT = "e";
 
     private static final String HELP_OPT = "h";
+
+    private static final String OFFLINE_LONGOPT = "offline";
 
     private static final String STACKTRACE_LONGOPT = "stacktrace";
 
@@ -150,6 +156,8 @@ public class OptionParser {
         new Hashtable<String, String>();
 
     private boolean includingAll = false;
+
+    private boolean offline = false;
 
     private boolean withStacktrace = false;
 
@@ -278,7 +286,15 @@ public class OptionParser {
         this.withStacktrace = withStacktrace;
     }
 
-    public OptionParser parseCommandLine(String[] args) {
+    public boolean isOffline() {
+		return offline;
+	}
+
+	public void setOffline(boolean offline) {
+		this.offline = offline;
+	}
+
+	public OptionParser parseCommandLine(String[] args) {
         try {
             OptionParser op = parseCommandLineWithoutExit(args);
             if (op == null)
@@ -308,6 +324,8 @@ public class OptionParser {
 
             parsePositionalArgs(opts, cl.getArgs());
 
+            if (cl.hasOption(OFFLINE_LONGOPT))
+                setOffline(true);
             Properties properties = cl.getOptionProperties("D");
             String catalogList = parseOption(properties,
                                              cl.getOptionValue(CATALOGS_OPT),
@@ -487,19 +505,18 @@ public class OptionParser {
 
         Set<String> values = new HashSet<String>();
 
-        StringTokenizer st = new StringTokenizer(optionValue, ",");
-        boolean first = true;
-        while (st.hasMoreTokens()) {
-            String s = st.nextToken();
-            if (first)
-                first = false;
-            else
+        if (optionValue == null)
+            values.add("all");
+        else {
+            StringTokenizer st = new StringTokenizer(optionValue, ",");
+            while (st.hasMoreTokens()) {
+                String s = st.nextToken();
                 values.add(s);
+            }
         }
-
-        boolean all = false;
-        if (optionValue == null || values.contains("all"))
-            all = true;
+        if (values.isEmpty())
+            values.add("all");
+        boolean all = values.contains("all");
         if (values.contains("catalogs") || all)
             setReportingCatalogs(true);
         if (values.contains("charsets") || all)
@@ -732,6 +749,13 @@ public class OptionParser {
             .longOpt("entities")
             .build();
         opts.addOption(entities);
+        Option offline =
+            Option.builder(OFFLINE_LONGOPT)
+            .desc(OFFLINE_DESC)
+            .hasArg(false)
+            .longOpt(OFFLINE_LONGOPT)
+            .build();
+        opts.addOption(offline);
         Option props =
             Option.builder("D")
             .desc("System properties.")

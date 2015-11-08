@@ -13,7 +13,11 @@ import org.apache.xerces.xni.XMLResourceIdentifier;
 import org.apache.xerces.xni.XMLString;
 import org.apache.xerces.xni.XNIException;
 import org.apache.xerces.xni.parser.XMLDocumentSource;
+import org.apache.xerces.xni.parser.XMLEntityResolver;
+import org.apache.xerces.xni.parser.XMLInputSource;
 import org.apache.xerces.xni.parser.XMLParserConfiguration;
+
+import com.kendallshaw.net.ResourceUtils;
 
 public class DocumentHandler extends XniConfigurationSources
                              implements XMLDocumentHandler
@@ -77,6 +81,12 @@ public class DocumentHandler extends XniConfigurationSources
                               final Augmentations unused)
         throws XNIException
     {
+        String base = locator.getBaseSystemId();
+        String expanded = locator.getExpandedSystemId();
+        if (expanded != null)
+            setBaseSystemId(expanded);
+        else if (base != null)
+            setBaseSystemId(base);
         final Serialization s = getSerializer();
         s.setLocator(locator);
         s.startDocument("document-type");
@@ -143,7 +153,18 @@ public class DocumentHandler extends XniConfigurationSources
         }
         Serialization ser = getSerializer();
         ser.setIncludingAll(include || includingAll);
-        getSerializer().doctypeDeclaration(rootElement, publicId, systemId);
+        XMLEntityResolver er = getConfiguration().getEntityResolver();
+        try {
+            XMLResourceIdentifier xid =
+                ResourceUtils.xniResourceId(publicId, systemId,
+                                            getBaseSystemId());
+            XMLInputSource xis =
+                er.resolveEntity(xid);
+            getSerializer().doctypeDeclaration(rootElement, publicId, systemId,
+                                               xis.getSystemId());
+        } catch (IOException e) {
+            throw new XNIException(e);
+        }
     }
 
     @Override
@@ -153,8 +174,10 @@ public class DocumentHandler extends XniConfigurationSources
     }
 
     @Override
-    public void startElement(final QName element, final XMLAttributes attributes,
-                             final Augmentations unused) throws XNIException {
+    public void startElement(QName element, XMLAttributes attributes,
+                             Augmentations unused)
+        throws XNIException
+    {
     }
 
     @Override

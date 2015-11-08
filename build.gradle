@@ -1,6 +1,7 @@
 // -*-mode: Groovy -*-
 
 apply plugin: 'java'
+apply plugin: 'groovy'
 
 version = 0.5
 
@@ -71,6 +72,15 @@ task 'dependencies.test'(type: Copy, dependsOn: 'dependencies.compile') {
   into 'local-lib/test'
 }
 
+test {
+  reports {
+    html.enabled = true
+  }
+  testLogging {
+    events "skipped", "failed", "standardOut", "standardError"
+  }
+}
+
 repositories {
   jcenter()
 }
@@ -86,6 +96,8 @@ dependencies {
   jarsCompile group: 'com.fasterxml.woodstox', name: 'woodstox-core', version: '[5.0.1,)'
   jarsCompile group: 'xerces', name: 'xercesImpl', version: '[2.11.0,)'
   jarsCompile group: 'xml-resolver', name: 'xml-resolver', version: '[1.2,)'
+  // icu4j-charset doesn't seem to be in maven. The build uses icu4j 56.1.
+  jarsTest group: 'org.spockframework', name: 'spock-core', version: '[1.0-groovy-2.4]'
 
   jarsTest group: 'junit', name: 'junit', version: '[4.12,)'
 }

@@ -1,13 +1,13 @@
 <!NOTATION text PUBLIC "-//KS//NOTATION Text//EN">
 
-<!NOTATION jpeg PUBLIC "-//KS//NOTATION Jpeg//EN" "http://example.com">
+<!NOTATION jpeg PUBLIC "-//KS//NOTATION JPEG//EN" "http://example.com">
 
 <!ELEMENT boilerplate (#PCDATA)>
 <!ATTLIST boilerplate
-          NOTATION (text|jpeg) #REQUIRED>
+          type NOTATION (text|jpeg) #REQUIRED>
 <!ELEMENT pre (#PCDATA)>
 <!ATTLIST pre
-          NOTATION (text) #FIXED "text">
+          type NOTATION (text) #FIXED "text">
 
 <!ELEMENT notations (pre, boilerplate, atts)>
 

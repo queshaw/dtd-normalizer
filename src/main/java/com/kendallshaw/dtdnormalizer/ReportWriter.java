@@ -25,6 +25,8 @@ public class ReportWriter {
     public static void report(InputSource input, OptionParser opt)
         throws Exception
     {
+        String ignore = System.getProperty("xml.catalog.ignoreMissing", "yes");
+        System.setProperty("xml.catalog.ignoreMissing", ignore);
         CatalogManager cm = new CatalogManager();
         cm.setVerbosity(0);
         cm.setCatalogClassName(TracingCatalog.class.getName());

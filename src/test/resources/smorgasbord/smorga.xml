@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE root PUBLIC "-//KS//DTD Smorgasbord//EN" "/home/kshaw/src/dtd-normalizer/src/test/resources/smorgasbord/smorga.dtd" [
+<!DOCTYPE root PUBLIC "-//KS//DTD Smorgasbord//EN" "smorga.dtd" [
 <!ENTITY some-text SYSTEM "data/text.txt" NDATA text>
 <!ENTITY some-jpeg SYSTEM "data/jpeg.jpg" NDATA jpeg>
 ]>
@@ -26,10 +26,11 @@
                 <refs refs="a2 a3"/>
             </tokens>
         </tokenized>
+        <enumerations/>
     </attributes>
     <notations>
         <pre></pre>
-        <boilerplate NOTATION="jpeg"></boilerplate>
+        <boilerplate type="jpeg"></boilerplate>
         <atts>
             <att-one arf="some-text"></att-one>
             <att-many arf="some-jpeg"></att-many>

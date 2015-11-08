@@ -1,3 +1,5 @@
+// -*- mode: java; coding: utf-8-unix
+
 package com.kendallshaw.dtdnormalizer;
 
 import java.io.BufferedWriter;
@@ -139,7 +141,7 @@ public class DtdSerialization extends SerializationMixin
 
     @Override
     public void doctypeDeclaration(String root, String publicId,
-                                   String systemId)
+                                   String systemId, String resourceId)
         throws XNIException
     {
         inExternalSubset = false;
@@ -502,3 +504,5 @@ public class DtdSerialization extends SerializationMixin
         flush();
     }
 }
+
+// vim: ff=unix

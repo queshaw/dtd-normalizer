@@ -188,15 +188,15 @@ public class XmlSerialization
     }
 
     @Override
-    public void doctypeDeclaration(final String root, final String publicId,
-                                   final String systemId)
+    public void doctypeDeclaration(String root, String publicId,
+                                   String systemId, String resourceId)
         throws XNIException
     {
         try {
             final XMLStreamWriter w = getXmlWriter();
             w.writeStartElement("doctype-declaration");
             w.writeAttribute("root", root);
-            externalIdentifier(publicId, systemId);
+            externalIdentifier(publicId, systemId, resourceId);
             w.writeEndElement();
         } catch (XMLStreamException e) {
             throw new XNIException(e);
@@ -536,7 +536,7 @@ public class XmlSerialization
             }
             final DefaultDeclaration dd = d.defaultDeclaration();
             final DefaultType dt = dd.type();
-            if (dt == null)
+            if (dt == null) {
                 if (dd.fixed() == null)
                     element("default-value", dd.value());
                 else {
@@ -545,7 +545,7 @@ public class XmlSerialization
                     text(dd.value());
                     endElement();
                 }
-            else if (DefaultType.IMPLIED == dt)
+            } else if (DefaultType.IMPLIED == dt)
                 emptyElement("implied");
             else if (DefaultType.REQUIRED == dt) {
                 final String value = dd.value();
@@ -623,8 +623,18 @@ public class XmlSerialization
     protected void externalIdentifier(final String p, final String s)
         throws XNIException
     {
-        if (p != null && !"".equals(p))
+        externalIdentifier(p, s, null);
+    }
+
+    protected void externalIdentifier(final String p, final String s,
+                                      final String r)
+        throws XNIException
+    {
+        if (p != null && !"".equals(p.trim()))
             element("public-id", p);
-        element("system-id", s);
+        if (s != null && !"".equals(s.trim()))
+            element("system-id", s);
+        if (r != null && !"".equals(r.trim()))
+            element("resource-id", r);
     }
 }

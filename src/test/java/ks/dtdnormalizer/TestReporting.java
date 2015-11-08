@@ -1,6 +1,8 @@
 package ks.dtdnormalizer;
 
-import org.junit.Assert;
+import java.io.PrintStream;
+
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.kendallshaw.dtdnormalizer.CommandLine;
@@ -8,6 +10,7 @@ import com.kendallshaw.dtdnormalizer.OptionParser;
 
 public class TestReporting {
 
+    @Ignore
     @Test
     public void reportEntitiesWithoutCatalog() {
         String[] args = new String[] {

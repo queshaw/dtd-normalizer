@@ -64,18 +64,22 @@ public class DtdNormalizer {
     }
 
     public void serialize() throws Exception {
-        Serialization out = getSerialization();
-        DtdHandler dtdHandler = new DtdHandler(out, configuration);
-        final DocumentHandler documentHandler =
-            new DocumentHandler(out, configuration);
-        InputSource is = getInput();
-        documentHandler.setBaseSystemId(is.getSystemId());
-        configuration.setDocumentHandler(documentHandler);
-        configuration.setEntityResolver(getIdentifierResolver());
-        configuration.setErrorHandler(getErrorHandler());
-        configuration.setDTDContentModelHandler(dtdHandler);
-        configuration.setDTDHandler(dtdHandler);
-        configuration.initialize();
-        configuration.parse(getInput());
+        try {
+            Serialization out = getSerialization();
+            DtdHandler dtdHandler = new DtdHandler(out, configuration);
+            final DocumentHandler documentHandler =
+                new DocumentHandler(out, configuration);
+            InputSource is = getInput();
+            documentHandler.setBaseSystemId(is.getSystemId());
+            configuration.setDocumentHandler(documentHandler);
+            configuration.setEntityResolver(getIdentifierResolver());
+            configuration.setErrorHandler(getErrorHandler());
+            configuration.setDTDContentModelHandler(dtdHandler);
+            configuration.setDTDHandler(dtdHandler);
+            configuration.initialize();
+            configuration.parse(getInput());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
